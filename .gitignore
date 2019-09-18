@@ -1,0 +1,10 @@
+# Not necessary editor cache
+.idea/
+
+# Build folder
+bin/
+obj/
+
+# Generated files
+log.txt
+settings.json
