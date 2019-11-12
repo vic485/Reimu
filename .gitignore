@@ -5,6 +5,8 @@
 bin/
 obj/
 
-# Generated files
+# Generated files and extras
+cert/
+*.user
 log.txt
 settings.json

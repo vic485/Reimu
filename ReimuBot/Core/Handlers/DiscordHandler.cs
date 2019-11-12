@@ -1,38 +1,34 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Reimu.Core.Helpers;
-using Reimu.Core.JsonModels;
+using Reimu.Core.Json;
+using Reimu.Giveaway;
 
 namespace Reimu.Core.Handlers
 {
-    /// <summary>
-    /// Handles Discord events
-    /// </summary>
     public class DiscordHandler
     {
         private readonly DiscordSocketClient _client;
-        private readonly RavenHandler _database;
+        private readonly DatabaseHandler _database;
         private readonly CommandService _commandService;
-        private readonly GuildHelper _guildHelper;
 
         private IServiceProvider _serviceProvider;
 
-        public DiscordHandler(DiscordSocketClient client, RavenHandler database, GuildHelper guildHelper,
-            CommandService commandService)
+        public DiscordHandler(DiscordSocketClient client, DatabaseHandler database, CommandService commandService)
         {
             _client = client;
             _database = database;
-            _guildHelper = guildHelper;
             _commandService = commandService;
         }
 
+        // Connect events and logs into discord
         public async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            // TODO: add remaining necessary events
+            // TODO: Add the rest of the events we will handle here
             _client.Log += Log;
             _client.Ready += ReadyAsync;
             _client.Disconnected += Disconnected;
@@ -42,9 +38,9 @@ namespace Reimu.Core.Handlers
             _client.JoinedGuild += JoinedGuildAsync;
             _client.UserJoined += UserJoinedAsync;
             _client.UserLeft += UserLeftAsync;
-            _client.MessageReceived += CommandHandlerAsync;
+            _client.MessageReceived += HandleMessageAsync;
 
-            await _client.LoginAsync(TokenType.Bot, _database.Get<ConfigModel>("Config").Token).ConfigureAwait(false);
+            await _client.LoginAsync(TokenType.Bot, _database.Get<BotConfig>("Config").Token).ConfigureAwait(false);
             await _client.StartAsync().ConfigureAwait(false);
 
             _serviceProvider = serviceProvider;
@@ -66,10 +62,14 @@ namespace Reimu.Core.Handlers
         /// <summary>
         /// Made a successful connection to discord, and Reimu is ready to run
         /// </summary>
+        /// <returns></returns>
         private async Task ReadyAsync()
         {
             Logger.Log("Discord", "Successfully connected to Discord!", ConsoleColor.Blue);
-            await _client.SetGameAsync($"{_database.Get<ConfigModel>("Config").Prefix}help");
+            // TODO: Change this to custom status when we can
+            //await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
+            var game = new Game("test", ActivityType.CustomStatus);
+            await _client.SetActivityAsync(game);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Reimu.Core.Handlers
 
         #endregion
 
-        #region Guilds
+        #region Guild Events
 
         private Task LeftGuild(SocketGuild guild)
         {
@@ -108,7 +108,7 @@ namespace Reimu.Core.Handlers
 
         private Task GuildAvailable(SocketGuild guild)
         {
-            if (!_database.Get<ConfigModel>("Config").GuildBlacklist.Contains(guild.Id))
+            if (!_database.Get<BotConfig>("Config").GuildBlacklist.Contains(guild.Id))
                 _database.AddGuild(guild.Id, guild.Name);
             else
                 guild.LeaveAsync();
@@ -118,15 +118,12 @@ namespace Reimu.Core.Handlers
 
         private async Task JoinedGuildAsync(SocketGuild guild)
         {
-            var config = _database.Get<ConfigModel>("Config");
+            var config = _database.Get<BotConfig>("Config");
             if (!config.GuildBlacklist.Contains(guild.Id))
             {
                 _database.AddGuild(guild.Id, guild.Name);
                 var defaultPrefix = config.Prefix;
-                await _guildHelper.DefaultChannel(guild.Id)
-                    .SendMessageAsync(
-                        $"Thank you for inviting me to your guild. Default prefix is `{defaultPrefix}` type `{defaultPrefix}help` for a list of commands.")
-                    .ConfigureAwait(false);
+                // TODO: Send message to default channel
             }
             else
             {
@@ -136,17 +133,17 @@ namespace Reimu.Core.Handlers
 
         #endregion
 
-        #region User
+        #region User Events
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
-            // TODO: Join message, join role, re-mute user
+            // TODO: Join role, join message, re-mute user
             await Task.Delay(1);
         }
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
-            // TODO: leave message
+            // TODO: Leave message
             await Task.Delay(1);
         }
 
@@ -154,29 +151,53 @@ namespace Reimu.Core.Handlers
 
         #region Messages
 
-        private async Task CommandHandlerAsync(SocketMessage message)
+        private async Task HandleMessageAsync(SocketMessage message)
         {
-            if (!(message is SocketUserMessage userMessage)) 
+            if (!(message is SocketUserMessage userMessage) || message.Author.IsBot)
                 return;
 
-            var argPos = 0;
-            var context = new IContext(_client, userMessage, _serviceProvider);
-            if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||
-                  userMessage.HasStringPrefix(context.Server.Prefix, ref argPos)))
+            // Why contains not work????
+            if (userMessage.MentionedUsers.Any(x => x.Id == _client.CurrentUser.Id))
+            {
+                await userMessage.AddReactionAsync(Emote.Parse("<:ReimuWantToDie:501411246906671135>"));
                 return;
-            // TODO: Guild blacklist check
+            }
+
+            var context = new BotContext(_client, userMessage, _serviceProvider);
+            
+            if (!context.GuildConfig.Profiles.ContainsKey(context.User.Id))
+                context.GuildConfig.Profiles.Add(context.User.Id, new GuildUser());
+
+            if (DateTime.UtcNow - context.GuildConfig.Profiles[context.User.Id].LastMessage > TimeSpan.FromMinutes(2))
+            {
+                await GiveawayHelper.OnMessage(context.User, context.GuildConfig);
+                
+                context.GuildConfig.Profiles[context.User.Id].LastMessage = DateTime.UtcNow;
+                _database.Save(context.GuildConfig);
+            }
+            
+            var argPos = 0;
+            if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||
+                  userMessage.HasStringPrefix("r!", ref argPos)))
+                return;
+            // TODO: Blacklist checks
 
             var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider, MultiMatchHandling.Best);
-            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (result.Error)
             {
                 case CommandError.UnmetPrecondition:
-                    // TODO: DM error if we can't send a message?
+                    // TODO: DM error if we can't send messages?
                     if (!result.ErrorReason.Contains("SendMessages"))
                         await context.Channel.SendMessageAsync(result.ErrorReason);
                     return;
+                
+                // TODO: Remove this
+                case CommandError.UnknownCommand:
+                    await context.Channel.SendMessageAsync(result.ErrorReason);
+                    return;
             }
-            // TODO: Record command for cool downs
+
+            // TODO: Record command for cooldown
         }
 
         #endregion
