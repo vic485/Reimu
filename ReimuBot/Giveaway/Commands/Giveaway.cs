@@ -6,13 +6,14 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Core;
 using Reimu.Core.Json;
+using Reimu.Preconditions;
 
 namespace Reimu.Giveaway.Commands
 {
     // TODO: For the love of god, clean up interactions
     public class Giveaway : ReimuBase
     {
-        [Command("giveaway allow")]
+        [Command("giveaway allow"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task AllowChannel(SocketGuildChannel channel)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -25,7 +26,7 @@ namespace Reimu.Giveaway.Commands
             return ReplyAsync($"Allowed xp gain again in {channel.Name} for this giveaway", updateGuild: true);
         }
         
-        [Command("giveaway block")]
+        [Command("giveaway block"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task BlockChannel(SocketGuildChannel channel)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -38,7 +39,7 @@ namespace Reimu.Giveaway.Commands
             return ReplyAsync($"Blocked xp gain in {channel.Name} for this giveaway", updateGuild: true);
         }
         
-        [Command("giveaway create")]
+        [Command("giveaway create"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public async Task CreateAsync()
         {
             // TODO: support multiple
@@ -101,7 +102,7 @@ namespace Reimu.Giveaway.Commands
             await ReplyAsync($"Alright, here is the giveaway info!", embed, updateGuild: true).ConfigureAwait(false);
         }
 
-        [Command("giveaway end")]
+        [Command("giveaway end"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public async Task EndAsync()
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -178,7 +179,7 @@ namespace Reimu.Giveaway.Commands
                 updateGuild: true); // TODO: Save guild docs + message
         }
 
-        [Command("giveaway set max")]
+        [Command("giveaway set max"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task SetMax(int value)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -188,7 +189,7 @@ namespace Reimu.Giveaway.Commands
             return ReplyAsync($"Set the maximum points per message to {value}", updateGuild: true);
         }
         
-        [Command("giveaway set min")]
+        [Command("giveaway set min"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task SetMin(int value)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -198,7 +199,7 @@ namespace Reimu.Giveaway.Commands
             return ReplyAsync($"Set the minimum points per message to {value}", updateGuild: true);
         }
 
-        [Command("giveaway toggle repeats")]
+        [Command("giveaway toggle repeats"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task ToggleMultiWin()
         {
             if (Context.GuildConfig.Giveaway == null)

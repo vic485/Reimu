@@ -190,11 +190,6 @@ namespace Reimu.Core.Handlers
                     if (!result.ErrorReason.Contains("SendMessages"))
                         await context.Channel.SendMessageAsync(result.ErrorReason);
                     return;
-                
-                // TODO: Remove this
-                case CommandError.UnknownCommand:
-                    await context.Channel.SendMessageAsync(result.ErrorReason);
-                    return;
             }
 
             // TODO: Record command for cooldown
