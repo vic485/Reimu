@@ -8,13 +8,23 @@ namespace Reimu.Scheduler
     public class SchedulerService
     {
         // TODO: Some way to cleanup past timers?
-        private List<Timer> _timers = new List<Timer>();
+        private Dictionary<string, Timer> _timers = new Dictionary<string, Timer>();
 
-        public Task Schedule(TimeSpan fromNow, Action todo)
+        public Task Schedule(string id, TimeSpan fromNow, Action todo)
         {
-            var timer = new Timer(x => todo.Invoke(), null, fromNow, TimeSpan.FromMilliseconds(-1));
-            _timers.Add(timer);
+            var timer = new Timer(async x =>
+            {
+                await Task.Run(todo.Invoke);
+                await RemoveTimer(id);
+            }, null, fromNow, TimeSpan.FromMilliseconds(-1));
+            _timers.Add(id, timer);
             return Task.CompletedTask;
+        }
+
+        private async Task RemoveTimer(string id)
+        {
+            await _timers[id].DisposeAsync();
+            _timers.Remove(id);
         }
     }
 }

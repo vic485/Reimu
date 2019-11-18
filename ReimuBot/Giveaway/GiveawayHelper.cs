@@ -19,7 +19,7 @@ namespace Reimu.Giveaway
             return Task.CompletedTask;
         }
 
-        public static List<ulong> GetWinners(GiveawayInfo giveaway)
+        public static IEnumerable<ulong> GetWinners(GiveawayInfo giveaway)
         {
             var totalEntries = giveaway.Entries.Sum(entrant => entrant.Value);
             var winners = new List<ulong>();

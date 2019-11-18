@@ -12,12 +12,12 @@ namespace Reimu.Core
 {
     public class BotContext : SocketCommandContext
     {
-        // TODO: Do we need a database session?
         public IDocumentSession Session { get; }
         public DatabaseHandler Database { get; }
         public BotConfig Config { get; }
         public GuildConfig GuildConfig { get; }
         public SchedulerService Scheduler { get; }
+        public GlobalUser UserData { get; }
 
         public BotContext(DiscordSocketClient client, SocketUserMessage msg, IServiceProvider provider) : base(client,
             msg)
@@ -26,6 +26,7 @@ namespace Reimu.Core
             Scheduler = provider.GetRequiredService<SchedulerService>();
             Database = provider.GetRequiredService<DatabaseHandler>();
             Config = Database.Get<BotConfig>("Config");
+            UserData = Database.Get<GlobalUser>($"user-{User.Id}") ?? new GlobalUser {Id = $"user-{User.Id}"};
             if (Guild != null)
                 GuildConfig = Database.Get<GuildConfig>($"guild-{Guild.Id}");
         }

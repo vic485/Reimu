@@ -9,7 +9,6 @@ namespace Reimu.Core
 {
     public class ReimuBase : ModuleBase<BotContext>
     {
-        // TODO: database saving
         public async Task<IUserMessage> ReplyAsync(string message, Embed embed = null, bool updateConfig = false,  bool updateGuild = false, bool updateUser = false)
         {
             await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
@@ -32,19 +31,26 @@ namespace Reimu.Core
             return msg;
         }
 
-        public Task<SocketMessage> ReplyWaitAsync(bool user = true, bool channel = true, TimeSpan? timeout = null)
+        public async Task<(bool, SocketMessage)> ReplyWaitAsync(string message, Embed embed = null, bool sameUser = true, bool sameChannel = true,
+            TimeSpan? timeout = null, bool handleTimeout = true)
         {
+            await ReplyAsync(message, embed);
+            timeout ??= TimeSpan.FromSeconds(15);
             var interactive = new Interactive<SocketMessage>();
-            if (user)
+            if (sameUser)
                 interactive.AddInteractive(new InteractiveUser());
-            if (channel)
+            if (sameChannel)
                 interactive.AddInteractive(new InteractiveChannel());
-            return ReplyWaitAsync(interactive, timeout);
+
+            var result = await ReplyWaitAsync(interactive, timeout.Value);
+            if (!result.Item1 && handleTimeout)
+                return (result.Item1,
+                    await ReplyAsync($"{Context.User.Mention}, you did not reply in time") as SocketMessage);
+            return result;
         }
 
-        private async Task<SocketMessage> ReplyWaitAsync(IInteractive<SocketMessage> interactive, TimeSpan? timeout = null)
+        private async Task<(bool, SocketMessage)> ReplyWaitAsync(IInteractive<SocketMessage> interactive, TimeSpan timeout)
         {
-            timeout ??= TimeSpan.FromSeconds(15);
             var trigger = new TaskCompletionSource<SocketMessage>();
 
             async Task InteractiveHandlerAsync(SocketMessage message)
@@ -55,11 +61,9 @@ namespace Reimu.Core
             }
 
             Context.Client.MessageReceived += InteractiveHandlerAsync;
-            var waitTask = await Task.WhenAny(trigger.Task, Task.Delay(timeout.Value)).ConfigureAwait(false);
+            var waitTask = await Task.WhenAny(trigger.Task, Task.Delay(timeout)).ConfigureAwait(false);
             Context.Client.MessageReceived -= InteractiveHandlerAsync;
-            if (waitTask == trigger.Task)
-                return await trigger.Task.ConfigureAwait(false);
-            return null;
+            return waitTask == trigger.Task ? (true, await trigger.Task.ConfigureAwait(false)) : (false, null);
         }
 
         // TODO: This might be easier/cleaner to use a system to check flags on what was changed by a command
@@ -70,6 +74,9 @@ namespace Reimu.Core
             
             if (guildChange)
                 Context.Database.Save(Context.GuildConfig);
+            
+            if (userChange)
+                Context.Database.Save(Context.UserData);
             
             if (Context.Session.Advanced.HasChanges)
                 Logger.Log("Database", "One or more documents were not saved after a command was run", ConsoleColor.Red);

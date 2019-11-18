@@ -13,7 +13,8 @@ namespace Reimu.Giveaway.Commands
     // TODO: For the love of god, clean up interactions
     public class Giveaway : ReimuBase
     {
-        [Command("giveaway allow"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+        [Command("giveaway allow"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task AllowChannel(SocketGuildChannel channel)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -25,8 +26,9 @@ namespace Reimu.Giveaway.Commands
             Context.GuildConfig.Giveaway.DisabledChannels.Remove(channel.Id);
             return ReplyAsync($"Allowed xp gain again in {channel.Name} for this giveaway", updateGuild: true);
         }
-        
-        [Command("giveaway block"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+
+        [Command("giveaway block"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task BlockChannel(SocketGuildChannel channel)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -34,12 +36,13 @@ namespace Reimu.Giveaway.Commands
 
             if (Context.GuildConfig.Giveaway.DisabledChannels.Contains(channel.Id))
                 return ReplyAsync("This channel already has xp gain blocked for this giveaway");
-            
+
             Context.GuildConfig.Giveaway.DisabledChannels.Add(channel.Id);
             return ReplyAsync($"Blocked xp gain in {channel.Name} for this giveaway", updateGuild: true);
         }
-        
-        [Command("giveaway create"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+
+        [Command("giveaway create"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public async Task CreateAsync()
         {
             // TODO: support multiple
@@ -50,38 +53,24 @@ namespace Reimu.Giveaway.Commands
                 return;
             }
 
-            await ReplyAsync("Alright, let's start a giveaway. First, what are we giving away?");
-            var item = await ReplyWaitAsync(timeout: TimeSpan.FromMinutes(2));
-            if (item == null)
-            {
-                await ReplyAsync("Giveaway creation has timed out").ConfigureAwait(false);
-                return;
-            }
+            var item = await ReplyWaitAsync("Alright, let's start a giveaway. First, what are we giving away?",
+                timeout: TimeSpan.FromMinutes(2));
+            if (!item.Item1) return;
 
-            await ReplyAsync("Okay, next how many winners will there be?");
-            var winnerMessage = await ReplyWaitAsync(timeout: TimeSpan.FromMinutes(2));
-            if (winnerMessage == null)
-            {
-                await ReplyAsync("Giveaway creation has timed out").ConfigureAwait(false);
-                return;
-            }
-            
-            if (!int.TryParse(winnerMessage.Content, out var winners))
+            var winnerMessage = await ReplyWaitAsync("Okay, next how many winners will there be?",
+                timeout: TimeSpan.FromMinutes(2));
+            if (!winnerMessage.Item1) return;
+
+            if (!int.TryParse(winnerMessage.Item2.Content, out var winners))
             {
                 await ReplyAsync("I couldn't understand that.").ConfigureAwait(false);
                 return;
             }
+            
+            var timeMessage = await ReplyWaitAsync("Alrighty, lastly how long will the giveaway last? Please type the number of hours as this is all I can understand currently.\nI'll give you 5 minutes to work this out if needed. The giveaway can last up to 49 days.", timeout: TimeSpan.FromMinutes(5));
+            if (!timeMessage.Item1) return;
 
-            await ReplyAsync(
-                "Alrighty, lastly how long will the giveaway last? Please type the number of hours as this is all I can understand currently.\nI'll give you 5 minutes to work this out if needed. The giveaway can last up to 49 days.");
-            var timeMessage = await ReplyWaitAsync(timeout: TimeSpan.FromMinutes(5));
-            if (timeMessage == null)
-            {
-                await ReplyAsync("Giveaway creation has timed out").ConfigureAwait(false);
-                return;
-            }
-
-            if (!double.TryParse(timeMessage.Content, out var time))
+            if (!double.TryParse(timeMessage.Item2.Content, out var time))
             {
                 await ReplyAsync("I couldn't understand that.").ConfigureAwait(false);
                 return;
@@ -89,20 +78,22 @@ namespace Reimu.Giveaway.Commands
 
             Context.GuildConfig.Giveaway = new GiveawayInfo
             {
-                Item = item.Content,
+                Item = item.Item2.Content,
                 EndsAt = DateTime.UtcNow + TimeSpan.FromHours(time),
                 NumWinners = winners
             };
 
             // TODO: embed building
-            var embed = new EmbedBuilder().WithAuthor("Giveaway").AddField("Item", item.Content).WithFooter("Ends at")
+            var embed = new EmbedBuilder().WithAuthor("Giveaway").AddField("Item", item.Item2.Content).WithFooter("Ends at")
                 .WithTimestamp(DateTimeOffset.Now + TimeSpan.FromHours(time)).Build();
 
-            await Context.Scheduler.Schedule(TimeSpan.FromHours(time), async () => await EndGiveaway());
+            await Context.Scheduler.Schedule($"{Context.Guild.Id}-giveaway", TimeSpan.FromHours(time),
+                async () => await EndGiveaway());
             await ReplyAsync($"Alright, here is the giveaway info!", embed, updateGuild: true).ConfigureAwait(false);
         }
 
-        [Command("giveaway end"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+        [Command("giveaway end"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public async Task EndAsync()
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -113,23 +104,20 @@ namespace Reimu.Giveaway.Commands
 
             if (Context.GuildConfig.Giveaway.EndsAt > DateTime.UtcNow)
             {
-                await ReplyAsync(
-                    "The giveaway time period has not ended yet. I can end it now and figure out the winners from the current entries. Would you like me to do so?")
-                    .ConfigureAwait(false);
-                var confirmResponse = await ReplyWaitAsync(timeout: TimeSpan.FromMinutes(1)).ConfigureAwait(false);
-                if (confirmResponse == null)
+                var confirmResponse = await ReplyWaitAsync("The giveaway time period has not ended yet. I can end it now and figure out the winners from the current entries. Would you like me to do so?", timeout: TimeSpan.FromMinutes(1), handleTimeout: false).ConfigureAwait(false);
+                if (!confirmResponse.Item1)
                 {
                     await ReplyAsync("You did not respond, I will leave the giveaway up.").ConfigureAwait(false);
                     return;
                 }
 
-                if (Responses.Deny.Any(x => x == confirmResponse.Content))
+                if (Responses.Deny.Any(x => x == confirmResponse.Item2.Content))
                 {
                     await ReplyAsync("Very well, I will leave the giveaway up.").ConfigureAwait(false);
                     return;
                 }
 
-                if (Responses.Confirm.All(x => x != confirmResponse.Content))
+                if (Responses.Confirm.All(x => x != confirmResponse.Item2.Content))
                 {
                     await ReplyAsync("I'm not sure what that means. I will leave the giveaway up then.")
                         .ConfigureAwait(false);
@@ -139,10 +127,11 @@ namespace Reimu.Giveaway.Commands
 
             var winners = GiveawayHelper.GetWinners(Context.GuildConfig.Giveaway);
             Context.GuildConfig.Giveaway = null;
-            var winnerString = winners.Aggregate("", (current, winner) => current + Context.Guild.GetUser(winner).Mention + "\n");
+            var winnerString = winners.Aggregate("",
+                (current, winner) => current + Context.Guild.GetUser(winner).Mention + "\n");
             if (string.IsNullOrWhiteSpace(winnerString))
                 winnerString = "none";
-            
+
             var embed = new EmbedBuilder().WithAuthor("Giveaway results").AddField("Winners", winnerString).Build();
             await ReplyAsync("", embed, updateGuild: true);
         }
@@ -176,10 +165,11 @@ namespace Reimu.Giveaway.Commands
             Context.GuildConfig.Profiles[Context.User.Id].GiveAwayPoints = left;
             await ReplyAsync(
                 $"{Context.User.Mention} you have added {entries} entries to the giveaway for a total of {total}.\nYou now have {left} points left",
-                updateGuild: true); // TODO: Save guild docs + message
+                updateGuild: true);
         }
 
-        [Command("giveaway set max"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+        [Command("giveaway set max"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task SetMax(int value)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -188,8 +178,9 @@ namespace Reimu.Giveaway.Commands
             Context.GuildConfig.Giveaway.MaxXp = value;
             return ReplyAsync($"Set the maximum points per message to {value}", updateGuild: true);
         }
-        
-        [Command("giveaway set min"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+
+        [Command("giveaway set min"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task SetMin(int value)
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -199,7 +190,8 @@ namespace Reimu.Giveaway.Commands
             return ReplyAsync($"Set the minimum points per message to {value}", updateGuild: true);
         }
 
-        [Command("giveaway toggle repeats"), UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
+        [Command("giveaway toggle repeats"),
+         UserPermission(GuildPermission.ManageChannels, "This command requires \"manage channels\" permission.")]
         public Task ToggleMultiWin()
         {
             if (Context.GuildConfig.Giveaway == null)
@@ -220,10 +212,11 @@ namespace Reimu.Giveaway.Commands
             var newData = Context.Database.Get<GuildConfig>($"guild-{Context.Guild.Id}");
             var winners = GiveawayHelper.GetWinners(newData.Giveaway);
             Context.GuildConfig.Giveaway = null;
-            var winnerString = winners.Aggregate("", (current, winner) => current + Context.Guild.GetUser(winner).Mention + "\n");
+            var winnerString = winners.Aggregate("",
+                (current, winner) => current + Context.Guild.GetUser(winner).Mention + "\n");
             if (string.IsNullOrWhiteSpace(winnerString))
                 winnerString = "none";
-            
+
             var embed = new EmbedBuilder().WithAuthor("Giveaway results").AddField("Winners", winnerString).Build();
             await ReplyAsync("", embed, updateGuild: true);
         }

@@ -67,9 +67,7 @@ namespace Reimu.Core.Handlers
         {
             Logger.Log("Discord", "Successfully connected to Discord!", ConsoleColor.Blue);
             // TODO: Change this to custom status when we can
-            //await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
-            var game = new Game("test", ActivityType.CustomStatus);
-            await _client.SetActivityAsync(game);
+            await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
         }
 
         /// <summary>
@@ -164,18 +162,29 @@ namespace Reimu.Core.Handlers
             }
 
             var context = new BotContext(_client, userMessage, _serviceProvider);
-            
+
+            // Globals
+            if (DateTime.UtcNow - context.UserData.LastMessage > TimeSpan.FromMinutes(2))
+            {
+                context.UserData.Points += Rand.Range(10, 20);
+                context.UserData.LastMessage = DateTime.UtcNow;
+                _database.Save(context.UserData);
+            }
+
+            // Guild
             if (!context.GuildConfig.Profiles.ContainsKey(context.User.Id))
                 context.GuildConfig.Profiles.Add(context.User.Id, new GuildUser());
 
             if (DateTime.UtcNow - context.GuildConfig.Profiles[context.User.Id].LastMessage > TimeSpan.FromMinutes(2))
             {
                 await GiveawayHelper.OnMessage(context.User, context.GuildConfig);
-                
+
                 context.GuildConfig.Profiles[context.User.Id].LastMessage = DateTime.UtcNow;
+                // TODO: Allow for changing of guild score rewarding
+                context.GuildConfig.Profiles[context.User.Id].Points = Rand.Range(10, 20);
                 _database.Save(context.GuildConfig);
             }
-            
+
             var argPos = 0;
             if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||
                   userMessage.HasStringPrefix("r!", ref argPos)))
