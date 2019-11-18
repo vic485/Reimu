@@ -20,9 +20,9 @@ namespace Reimu.Preconditions
 
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext commandContext, CommandInfo command, IServiceProvider services)
         {
-            var context = commandContext as BotContext;
-            // TODO: null check for dm/guild commands that need perms in guilds
-            var user = context.User as SocketGuildUser;
+            if (!(commandContext is BotContext context && context.User is SocketGuildUser user))
+                return Task.FromResult(PreconditionResult.FromError("This command needs to be run in a guild"));
+
             var special =
                 context.Client.GetApplicationInfoAsync().GetAwaiter().GetResult().Owner.Id == context.User.Id ||
                 context.User.Id == context.Guild.OwnerId;

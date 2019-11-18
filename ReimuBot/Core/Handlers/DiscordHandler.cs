@@ -32,6 +32,7 @@ namespace Reimu.Core.Handlers
             _client.Log += Log;
             _client.Ready += ReadyAsync;
             _client.Disconnected += Disconnected;
+            _client.Connected += Connected;
             _client.LatencyUpdated += LatencyUpdated;
             _client.LeftGuild += LeftGuild;
             _client.GuildAvailable += GuildAvailable;
@@ -65,7 +66,7 @@ namespace Reimu.Core.Handlers
         /// <returns></returns>
         private async Task ReadyAsync()
         {
-            Logger.Log("Discord", "Successfully connected to Discord!", ConsoleColor.Blue);
+            Logger.Log("Discord", "Connected and ready to run", ConsoleColor.Blue);
             // TODO: Change this to custom status when we can
             await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
         }
@@ -77,6 +78,12 @@ namespace Reimu.Core.Handlers
         private static Task Disconnected(Exception error)
         {
             Logger.Log("Discord", $"Disconnected from Discord: {error.Message}", ConsoleColor.DarkBlue);
+            return Task.CompletedTask;
+        }
+
+        private static Task Connected()
+        {
+            Logger.Log("Discord", "Connected to Discord", ConsoleColor.DarkBlue);
             return Task.CompletedTask;
         }
 
@@ -162,27 +169,32 @@ namespace Reimu.Core.Handlers
             }
 
             var context = new BotContext(_client, userMessage, _serviceProvider);
-
-            // Globals
-            if (DateTime.UtcNow - context.UserData.LastMessage > TimeSpan.FromMinutes(2))
+            
+            // Prevent xp gain in dms, guild xp would cause this to throw an error as well, blocking dm commands
+            if (!(context.Channel is IDMChannel))
             {
-                context.UserData.Points += Rand.Range(10, 20);
-                context.UserData.LastMessage = DateTime.UtcNow;
-                _database.Save(context.UserData);
-            }
+                // Globals
+                if (DateTime.UtcNow - context.UserData.LastMessage > TimeSpan.FromMinutes(2))
+                {
+                    context.UserData.Points += Rand.Range(10, 20);
+                    context.UserData.LastMessage = DateTime.UtcNow;
+                    _database.Save(context.UserData);
+                }
 
-            // Guild
-            if (!context.GuildConfig.Profiles.ContainsKey(context.User.Id))
-                context.GuildConfig.Profiles.Add(context.User.Id, new GuildUser());
+                // Guild
+                if (!context.GuildConfig.Profiles.ContainsKey(context.User.Id))
+                    context.GuildConfig.Profiles.Add(context.User.Id, new GuildUser());
 
-            if (DateTime.UtcNow - context.GuildConfig.Profiles[context.User.Id].LastMessage > TimeSpan.FromMinutes(2))
-            {
-                await GiveawayHelper.OnMessage(context.User, context.GuildConfig);
+                if (DateTime.UtcNow - context.GuildConfig.Profiles[context.User.Id].LastMessage >
+                    TimeSpan.FromMinutes(2))
+                {
+                    await GiveawayHelper.OnMessage(context.User, context.GuildConfig);
 
-                context.GuildConfig.Profiles[context.User.Id].LastMessage = DateTime.UtcNow;
-                // TODO: Allow for changing of guild score rewarding
-                context.GuildConfig.Profiles[context.User.Id].Points = Rand.Range(10, 20);
-                _database.Save(context.GuildConfig);
+                    context.GuildConfig.Profiles[context.User.Id].LastMessage = DateTime.UtcNow;
+                    // TODO: Allow for changing of guild score rewarding
+                    context.GuildConfig.Profiles[context.User.Id].Points = Rand.Range(10, 20);
+                    _database.Save(context.GuildConfig);
+                }
             }
 
             var argPos = 0;
