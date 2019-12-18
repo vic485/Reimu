@@ -1,13 +1,15 @@
 ﻿using System.Security.Cryptography.X509Certificates;
+using Reimu.Common.Logging;
 
-namespace Reimu.Core.Configuration
+namespace Reimu.Common.Configuration
 {
     public class SettingData
     {
+        public LogType LogLevel { get; set; } = LogType.Info;
         public int Shard { get; set; } = 0;
         public int TotalShards { get; set; } = 1;
         public string DatabaseName { get; set; } = "Reimu";
-        public string[] Urls { get; set; } = {"http://localhost:8080"};
+        public string[] DatabaseUrls { get; set; } = {"http://localhost:8080"};
         public string CertificatePath { get; set; }
 
         public X509Certificate2 Certificate =>

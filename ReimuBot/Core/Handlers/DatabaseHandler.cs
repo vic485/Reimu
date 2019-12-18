@@ -1,5 +1,6 @@
 ﻿using System;
 using Raven.Client.Documents;
+using Reimu.Common.Logging;
 using Reimu.Core.Json;
 
 namespace Reimu.Core.Handlers
@@ -19,9 +20,9 @@ namespace Reimu.Core.Handlers
             if (session.Advanced.Exists("Config"))
                 return;
 
-            Logger.Log("Database", "Enter bot token: ", ConsoleColor.DarkYellow);
+            Logger.LogForce("Enter bot token: ");
             var token = Console.ReadLine();
-            Logger.Log("Database", "Enter bot prefix: ", ConsoleColor.DarkYellow);
+            Logger.LogVerbose("Enter bot prefix: ");
             var prefix = Console.ReadLine();
 
             Save(new BotConfig
@@ -56,7 +57,7 @@ namespace Reimu.Core.Handlers
                 Prefix = Get<BotConfig>("Config").Prefix
             });
 
-            Logger.Log("Database", $"Added config for {name} ({id})", ConsoleColor.DarkYellow);
+            Logger.LogInfo($"Added config for {name} ({id}).");
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Reimu.Core.Handlers
         public void RemoveGuild(ulong id, string name)
         {
             // TODO: remove guild model
-            Logger.Log("Database", $"Removed config for {name} ({id})", ConsoleColor.DarkYellow);
+            Logger.LogInfo($"Removed config for {name} ({id}).");
         }
     }
 }

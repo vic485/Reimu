@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Reimu.Common.Logging;
 using Reimu.Core.Interaction;
 
 namespace Reimu.Core
@@ -96,8 +97,7 @@ namespace Reimu.Core
                 Context.Database.Save(Context.UserData);
 
             if (Context.Session.Advanced.HasChanges)
-                Logger.Log("Database", "One or more documents were not saved after a command was run",
-                    ConsoleColor.Red);
+                Logger.LogWarning("One or more documents were not saved after a command was run");
         }
     }
 }

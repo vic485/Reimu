@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Reimu.Common.Logging;
 using Reimu.Core.Json;
 using Reimu.Giveaway;
 
@@ -54,7 +55,7 @@ namespace Reimu.Core.Handlers
         /// <param name="logMessage">Discord message</param>
         private static Task Log(LogMessage logMessage)
         {
-            Logger.Log("Log", logMessage.Message ?? logMessage.Exception.Message, ConsoleColor.Green);
+            Logger.LogInfo(logMessage.Message ?? logMessage.Exception.Message);
             return Task.CompletedTask;
         }
 
@@ -66,7 +67,7 @@ namespace Reimu.Core.Handlers
         /// <returns></returns>
         private async Task ReadyAsync()
         {
-            Logger.Log("Discord", "Connected and ready to run", ConsoleColor.Blue);
+            Logger.LogInfo("Connected and ready to run");
             // TODO: Change this to custom status when we can
             await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
         }
@@ -77,13 +78,13 @@ namespace Reimu.Core.Handlers
         /// <param name="error">Error message</param>
         private static Task Disconnected(Exception error)
         {
-            Logger.Log("Discord", $"Disconnected from Discord: {error.Message}", ConsoleColor.DarkBlue);
+            Logger.LogInfo($"Disconnected from Discord: {error.Message}");
             return Task.CompletedTask;
         }
 
         private static Task Connected()
         {
-            Logger.Log("Discord", "Connected to Discord", ConsoleColor.DarkBlue);
+            Logger.LogInfo("Connected to Discord");
             return Task.CompletedTask;
         }
 

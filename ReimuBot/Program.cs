@@ -1,20 +1,28 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Raven.Client.Documents;
 using Raven.Client.Http;
-using Reimu.Core.Configuration;
+using Reimu.Common.Configuration;
+using Reimu.Common.Logging;
 using Reimu.Core.Handlers;
 using Reimu.Scheduler;
 
 namespace Reimu
 {
-    internal class Program
+    internal static class Program
     {
+        public const string Version = "0.0.1";
+        public static SettingData Configuration { get; private set; }
+
         private static async Task Main(string[] args)
         {
+            Configuration = SettingsLoader.Load();
+            Logger.Initialize(Configuration.LogLevel, Path.Combine(Directory.GetCurrentDirectory(), "log.txt"),
+                Version);
             await using var services = SetupServices();
             services.GetRequiredService<DatabaseHandler>().Initialize();
             await services.GetRequiredService<DiscordHandler>().InitializeAsync(services).ConfigureAwait(false);
@@ -26,8 +34,8 @@ namespace Reimu
             => new ServiceCollection()
                 .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
                 {
-                    ShardId = BotConfig.Settings.Shard,
-                    TotalShards = BotConfig.Settings.TotalShards,
+                    ShardId = Configuration.Shard,
+                    TotalShards = Configuration.TotalShards,
                     MessageCacheSize = 20,
                     AlwaysDownloadUsers = true,
                     LogLevel = LogSeverity.Error
@@ -41,9 +49,9 @@ namespace Reimu
                 }))
                 .AddSingleton(new DocumentStore
                 {
-                    Certificate = BotConfig.Settings.Certificate,
-                    Database = BotConfig.Settings.DatabaseName,
-                    Urls = BotConfig.Settings.Urls,
+                    Certificate = Configuration.Certificate,
+                    Database = Configuration.DatabaseName,
+                    Urls = Configuration.DatabaseUrls,
                     Conventions =
                     {
                         ReadBalanceBehavior = ReadBalanceBehavior.RoundRobin
