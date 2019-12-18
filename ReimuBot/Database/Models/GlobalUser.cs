@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Reimu.Core.Json
+namespace Reimu.Database.Models
 {
     public class GlobalUser : DatabaseItem
     {

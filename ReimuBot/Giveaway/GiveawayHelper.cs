@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Reimu.Core;
-using Reimu.Core.Json;
+using Reimu.Database.Models;
 
 namespace Reimu.Giveaway
 {

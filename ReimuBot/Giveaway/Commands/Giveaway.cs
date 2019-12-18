@@ -5,7 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Core;
-using Reimu.Core.Json;
+using Reimu.Database.Models;
 using Reimu.Preconditions;
 
 namespace Reimu.Giveaway.Commands

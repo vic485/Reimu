@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Reimu.Core.Json
+namespace Reimu.Database.Models
 {
     /// <summary>
     /// Shared bot configuration settings

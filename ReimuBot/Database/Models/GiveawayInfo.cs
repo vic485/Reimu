@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Reimu.Core.Json
+namespace Reimu.Database.Models
 {
     public class GiveawayInfo
     {

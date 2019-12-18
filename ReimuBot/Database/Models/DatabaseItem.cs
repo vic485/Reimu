@@ -1,4 +1,4 @@
-﻿namespace Reimu.Core.Json
+﻿namespace Reimu.Database.Models
 {
     /// <summary>
     /// Base parts for information stored in the database

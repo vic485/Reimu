@@ -1,9 +1,9 @@
 ﻿using System;
 using Raven.Client.Documents;
 using Reimu.Common.Logging;
-using Reimu.Core.Json;
+using Reimu.Database.Models;
 
-namespace Reimu.Core.Handlers
+namespace Reimu.Database
 {
     public class DatabaseHandler
     {

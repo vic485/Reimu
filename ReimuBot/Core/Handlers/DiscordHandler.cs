@@ -6,7 +6,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Common.Logging;
-using Reimu.Core.Json;
+using Reimu.Database;
+using Reimu.Database.Models;
 using Reimu.Giveaway;
 
 namespace Reimu.Core.Handlers

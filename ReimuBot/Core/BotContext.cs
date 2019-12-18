@@ -5,7 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using Reimu.Core.Handlers;
-using Reimu.Core.Json;
+using Reimu.Database;
+using Reimu.Database.Models;
 using Reimu.Scheduler;
 
 namespace Reimu.Core

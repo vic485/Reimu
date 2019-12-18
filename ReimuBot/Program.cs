@@ -9,6 +9,7 @@ using Raven.Client.Http;
 using Reimu.Common.Configuration;
 using Reimu.Common.Logging;
 using Reimu.Core.Handlers;
+using Reimu.Database;
 using Reimu.Scheduler;
 
 namespace Reimu
