@@ -12,5 +12,11 @@
     <ItemGroup>
       <ProjectReference Include="..\ReimuBot.Common\ReimuBot.Common.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <None Update="translations\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
 </Project>

@@ -1,0 +1,6 @@
+﻿{
+  "manage-roles": [
+    "You need permission to manage roles to run this command.",
+    "I do not have permission to manage roles."
+  ]
+}

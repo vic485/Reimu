@@ -1,0 +1,9 @@
+﻿{
+  "ping": [
+    "Connection Information",
+    "Discord Latency",
+    "{latency} ms",
+    "Internet Latency",
+    "{latency} ms"
+  ]
+}

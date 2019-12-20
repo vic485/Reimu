@@ -18,9 +18,10 @@ namespace Reimu.Core
             return await base.ReplyAsync(message, false, embed, null);
         }
 
-        public async Task<IUserMessage> ReplyFile(string path, string message)
+        public async Task<IUserMessage> ReplyFile(string path, string message = null)
         {
-            await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
+            if (message != null)
+                await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
             return await Context.Channel.SendFileAsync(path, message);
         }
 
@@ -88,16 +89,25 @@ namespace Reimu.Core
         private void SaveDocuments(bool configChange, bool guildChange, bool userChange)
         {
             if (configChange)
+            {
+                Logger.LogVerbose("Bot configuration update requested.");
                 Context.Database.Save(Context.Config);
+            }
 
             if (guildChange)
+            {
+                Logger.LogVerbose($"Guild configuration update requested for {Context.GuildConfig.Id}.");
                 Context.Database.Save(Context.GuildConfig);
+            }
 
             if (userChange)
+            {
+                Logger.LogVerbose($"Global user data update requested for {Context.UserData.Id}.");
                 Context.Database.Save(Context.UserData);
+            }
 
             if (Context.Session.Advanced.HasChanges)
-                Logger.LogWarning("One or more documents were not saved after a command was run");
+                Logger.LogError("One or more documents were not saved after a command was run");
         }
     }
 }

@@ -1,0 +1,9 @@
+﻿{
+  "ping": [
+    "接続情報",
+    "Discordの待ち時間",
+    "{latency} ms",
+    "インターネット遅延",
+    "{latency} ms"
+  ]
+}

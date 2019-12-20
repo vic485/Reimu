@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ReimuBot.Common\ReimuBot.Common.csproj" />
+      <ProjectReference Include="..\ReimuBot.Translation\ReimuBot.Translation.csproj" />
     </ItemGroup>
 
 </Project>

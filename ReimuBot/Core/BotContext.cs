@@ -28,8 +28,9 @@ namespace Reimu.Core
             Database = provider.GetRequiredService<DatabaseHandler>();
             Config = Database.Get<BotConfig>("Config");
             UserData = Database.Get<GlobalUser>($"user-{User.Id}") ?? new GlobalUser {Id = $"user-{User.Id}"};
-            if (Guild != null)
-                GuildConfig = Database.Get<GuildConfig>($"guild-{Guild.Id}");
+            // TODO: This will cause the message handler to throw if we are not in a guild. The message handler will need to be adjusted later if we support dm commands
+            //if (Guild != null)
+            GuildConfig = Database.Get<GuildConfig>($"guild-{Guild.Id}");
         }
     }
 }

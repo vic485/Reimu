@@ -4,6 +4,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Core;
+using Reimu.Translation;
 
 namespace Reimu.Preconditions
 {
@@ -18,10 +19,11 @@ namespace Reimu.Preconditions
             _error = error;
         }
 
-        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext commandContext, CommandInfo command, IServiceProvider services)
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext commandContext,
+            CommandInfo command, IServiceProvider services)
         {
             if (!(commandContext is BotContext context && context.User is SocketGuildUser user))
-                return Task.FromResult(PreconditionResult.FromError("This command needs to be run in a guild"));
+                throw new ArgumentException("Received incorrect context.");
 
             var special =
                 context.Client.GetApplicationInfoAsync().GetAwaiter().GetResult().Owner.Id == context.User.Id ||
@@ -29,7 +31,9 @@ namespace Reimu.Preconditions
 
             return user.GuildPermissions.Has(_guildPermission) || special
                 ? Task.FromResult(PreconditionResult.FromSuccess())
-                : Task.FromResult(PreconditionResult.FromError(_error));
+                : Task.FromResult(
+                    PreconditionResult.FromError(Translator.Get("preconditions", _error,
+                        context.GuildConfig.Locale)[0]));
         }
     }
 }
