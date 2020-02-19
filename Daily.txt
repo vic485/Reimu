@@ -1,0 +1,3 @@
+Daily amount 50
+Streak:
+ 3 days: +45

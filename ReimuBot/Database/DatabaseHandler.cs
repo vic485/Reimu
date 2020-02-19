@@ -1,5 +1,8 @@
 ﻿using System;
 using Raven.Client.Documents;
+#if !PUBLIC_BOT
+using Raven.Embedded;
+#endif
 using Reimu.Common.Logging;
 using Reimu.Database.Models;
 
@@ -9,7 +12,16 @@ namespace Reimu.Database
     {
         private readonly IDocumentStore _store;
 
+#if PUBLIC_BOT
         public DatabaseHandler(IDocumentStore store) => _store = store;
+#else
+        public DatabaseHandler()
+        {
+            // NOTE: As of writing (RavenDB 4.2.8) embedded instances require .net core 2.2.8
+            EmbeddedServer.Instance.StartServer();
+            _store = EmbeddedServer.Instance.GetDocumentStore("Reimu");
+        }
+#endif
 
         /// <summary>
         /// Checks if the configuration exists, and creates it if not
@@ -59,8 +71,7 @@ namespace Reimu.Database
             Save(new GuildConfig
             {
                 Id = $"guild-{id}",
-                Prefix = Get<BotConfig>("Config").Prefix,
-                Locale = GetLocale(voiceRegionId)
+                Prefix = Get<BotConfig>("Config").Prefix
             });
 
             Logger.LogInfo($"Added config for {name} ({id}).");
@@ -96,12 +107,5 @@ namespace Reimu.Database
             session.Delete($"guild-{id}");
             Logger.LogInfo($"Removed config for {name} ({id}).");
         }
-
-        private static string GetLocale(string discordRegionId)
-            => discordRegionId switch
-            {
-                "japan" => "ja-jp",
-                _ => "en-us"
-            };
     }
 }

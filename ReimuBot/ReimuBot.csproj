@@ -6,17 +6,31 @@
         <LangVersion>8</LangVersion>
         <RootNamespace>Reimu</RootNamespace>
         <RuntimeIdentifiers>win10-x64;ubuntu.18.04-x64</RuntimeIdentifiers>
+        <Configurations>Debug;Release;Public</Configurations>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)'=='Public'">
+        <DefineConstants>PUBLIC_BOT</DefineConstants>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+    
+    <ItemGroup Condition="'$(Configuration)'=='Public'">
+        <PackageReference Include="RavenDB.Client" Version="4.2.8" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)'!='Public'">
+        <PackageReference Include="RavenDB.Embedded" Version="4.2.8" />
+    </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net" Version="2.2.0-dev-20191109.3" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0-preview2.19525.4" />
-      <PackageReference Include="RavenDB.Client" Version="4.2.4" />
+      <PackageReference Include="Discord.Net" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\ReimuBot.Common\ReimuBot.Common.csproj" />
-      <ProjectReference Include="..\ReimuBot.Translation\ReimuBot.Translation.csproj" />
     </ItemGroup>
 
 </Project>

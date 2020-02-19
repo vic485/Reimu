@@ -10,14 +10,13 @@ namespace Reimu.Common.Configuration
             WriteIndented = true,
             IgnoreReadOnlyProperties = true
         };
-
-        public static SettingData Load()
+        public static LocalSettings Load()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
             if (!File.Exists(path))
-                File.WriteAllText(path, JsonSerializer.Serialize(new SettingData(), Options));
+                File.WriteAllText(path, JsonSerializer.Serialize(new LocalSettings(), Options));
 
-            return JsonSerializer.Deserialize<SettingData>(File.ReadAllText(path));
+            return JsonSerializer.Deserialize<LocalSettings>(File.ReadAllText(path));
         }
     }
 }
