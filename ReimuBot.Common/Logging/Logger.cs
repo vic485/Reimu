@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Xml.Linq;
 
 namespace Reimu.Common.Logging
 {
@@ -7,21 +8,22 @@ namespace Reimu.Common.Logging
     {
         private static LogType _logLevel;
         private static string _filePath;
-        private static readonly object _lock = new object();
+        private static readonly object Lock = new object();
 
         public static void Initialize(LogType logType, string filePath, string version)
         {
             _logLevel = logType;
             _filePath = filePath;
-            
+
             PrintHeader(version);
         }
-        
+
         public static void LogDebug(string message) => Log(LogType.Debug, message);
         public static void LogVerbose(string message) => Log(LogType.Verbose, message);
         public static void LogInfo(string message) => Log(LogType.Info, message);
         public static void LogWarning(string message) => Log(LogType.Warning, message);
         public static void LogError(string message) => Log(LogType.Error, message);
+        public static void LogException(Exception e) => Log(LogType.Error, ExceptionToXml(e).ToString());
         public static void LogCritical(string message) => Log(LogType.Critical, message);
         public static void LogForce(string message) => Log(LogType.Force, message);
 
@@ -31,7 +33,7 @@ namespace Reimu.Common.Logging
             if (logType < _logLevel)
                 return;
 
-            lock (_lock)
+            lock (Lock)
             {
                 Console.WriteLine();
                 // use local time for console/journalctl
@@ -43,6 +45,33 @@ namespace Reimu.Common.Logging
 
                 WriteToFile($"[{DateTime.UtcNow:yyyy/MM/dd - HH:mm}] [{logType}] {message}");
             }
+        }
+
+        private static XElement ExceptionToXml(Exception e)
+        {
+            var root = new XElement(e.GetType().ToString());
+
+            if (e.Message != null)
+                root.Add(new XElement("Message", e.Message));
+
+            if (e.StackTrace != null)
+                root.Add(new XElement("StackTrace", e.StackTrace));
+
+            if (e.Data.Count > 0)
+            {
+                var data = new XElement("Data");
+                foreach (var key in e.Data.Keys)
+                {
+                    data.Add(new XElement(key.ToString(), e.Data[key]));
+                }
+
+                root.Add(data);
+            }
+
+            if (e.InnerException != null)
+                root.Add(new XElement("InnerException", ExceptionToXml(e.InnerException)));
+
+            return root;
         }
 
         private static void WriteToFile(string message)
@@ -66,7 +95,7 @@ namespace Reimu.Common.Logging
 
         private static void PrintHeader(string version)
         {
-            lock (_lock)
+            lock (Lock)
             {
                 string[] header =
                 {
@@ -80,9 +109,9 @@ namespace Reimu.Common.Logging
                 };
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                foreach(var line in header)
+                foreach (var line in header)
                     Console.WriteLine(line);
-                
+
                 Console.ResetColor();
                 Console.WriteLine($"Version: {version}");
             }
