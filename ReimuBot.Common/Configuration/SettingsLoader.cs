@@ -10,6 +10,7 @@ namespace Reimu.Common.Configuration
             WriteIndented = true,
             IgnoreReadOnlyProperties = true
         };
+
         public static LocalSettings Load()
         {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "settings.json");

@@ -4,10 +4,13 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+#if PUBLIC_BOT
 using Raven.Client.Documents;
 using Raven.Client.Http;
+#endif
 using Reimu.Common.Configuration;
 using Reimu.Common.Logging;
+using Reimu.Core;
 using Reimu.Database;
 
 namespace Reimu
@@ -24,6 +27,7 @@ namespace Reimu
 
             await using var services = SetupServices();
             services.GetRequiredService<DatabaseHandler>().Initialize();
+            await services.GetRequiredService<DiscordHandler>().InitializeAsync(services);
 
             await Task.Delay(-1);
         }
@@ -55,6 +59,7 @@ namespace Reimu
                 }.Initialize())
 #endif
                 .AddSingleton<DatabaseHandler>()
+                .AddSingleton<DiscordHandler>()
                 .BuildServiceProvider();
     }
 }

@@ -8,7 +8,7 @@ using Reimu.Database.Models;
 
 namespace Reimu.Database
 {
-    public class DatabaseHandler
+    public class DatabaseHandler : IDisposable
     {
         private readonly IDocumentStore _store;
 
@@ -62,7 +62,7 @@ namespace Reimu.Database
             return session.Load<T>(id);
         }
 
-        public void AddGuild(ulong id, string name, string voiceRegionId)
+        public void AddGuild(ulong id, string name)
         {
             using var session = _store.OpenSession();
             if (session.Advanced.Exists($"guild-{id}"))
@@ -101,11 +101,16 @@ namespace Reimu.Database
         /// </summary>
         /// <param name="id">Guild id</param>
         /// <param name="name">Guild name</param>
-        public void RemoveGuild(ulong id, string name)
+        public void RemoveGuild(ulong id, string name) // TODO: Generic item removal
         {
             using var session = _store.OpenSession();
             session.Delete($"guild-{id}");
             Logger.LogInfo($"Removed config for {name} ({id}).");
+        }
+
+        public void Dispose()
+        {
+            _store.Dispose();
         }
     }
 }

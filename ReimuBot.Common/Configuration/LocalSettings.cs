@@ -13,7 +13,7 @@ namespace Reimu.Common.Configuration
         public string[] DatabaseUrls { get; set; } = {"http://localhost:8080"};
         public string CertificatePath { get; set; }
 
-        public X509Certificate2 Certificate 
+        public X509Certificate2 Certificate
             => !string.IsNullOrWhiteSpace(CertificatePath) ? new X509Certificate2(CertificatePath) : null;
     }
 }

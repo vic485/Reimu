@@ -1,4 +1,7 @@
 # Reimu
+<p align="center">
+<a href="https://ravendb.net"><img src="https://img.shields.io/badge/Powered%20By-RavenDB-CA1C59.svg?longCache=true&style=flat-square"/></a>
+</p>
 C# Discord bot - In early stages, expect massive, possibly breaking, changes until a suitable release point is achieved (when version string in Program.cs reads 1.0.0+)
 
 # Running Reimu
