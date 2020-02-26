@@ -14,7 +14,17 @@ namespace Reimu.Core
             _ = Task.Run(() => SaveDocuments(updateConfig, updateGuild, updateUser));
             return await base.ReplyAsync(message, false, embed, null);
         }
-        
+
+        public async Task<IUserMessage> ReplyFileAsync(string path, string message = null)
+        {
+            if (message != null)
+                await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
+            return await Context.Channel.SendFileAsync(path, message);
+        }
+
+        protected EmbedBuilder CreateEmbed(EmbedColor color)
+            => new EmbedBuilder {Color = new Color((uint) color)};
+
         // TODO: This might be easier/cleaner to use a system to check flags on what was changed by a command
         private void SaveDocuments(bool configChange, bool guildChange, bool userChange)
         {

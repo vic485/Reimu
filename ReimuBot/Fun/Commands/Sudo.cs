@@ -5,6 +5,7 @@ using Reimu.Core;
 namespace Reimu.Fun.Commands
 {
     // Realitätsverlust#8416 wanted this
+    [Name("Fun")]
     public class Sudo : ReimuBase
     {
         [Command("sudo")]
