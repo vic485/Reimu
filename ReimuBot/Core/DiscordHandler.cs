@@ -187,7 +187,11 @@ namespace Reimu.Core
                 return;
 
             var context = new BotContext(_client, userMessage, _serviceProvider);
-            // TODO: xp gain in guilds only
+            if (context.Channel is SocketGuildChannel)
+            {
+                // TODO: xp gain in guilds only
+            }
+
             var argPos = 0;
             if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||
                   userMessage.HasStringPrefix(context.GuildConfig.Prefix, ref argPos)))

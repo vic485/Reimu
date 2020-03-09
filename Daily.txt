@@ -1,3 +1,4 @@
-Daily amount 50-60
+Daily amount 30-60
 Streak:
  3 days: +45
+ 8 days: +75

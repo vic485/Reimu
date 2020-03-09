@@ -22,7 +22,7 @@ namespace Reimu.Core
             return await Context.Channel.SendFileAsync(path, message);
         }
 
-        protected EmbedBuilder CreateEmbed(EmbedColor color)
+        protected static EmbedBuilder CreateEmbed(EmbedColor color)
             => new EmbedBuilder {Color = new Color((uint) color)};
 
         // TODO: This might be easier/cleaner to use a system to check flags on what was changed by a command
@@ -34,8 +34,8 @@ namespace Reimu.Core
             if (guildChange)
                 Context.Database.Save(Context.GuildConfig);
 
-            //if (userChange)
-                //Context.Database.Save(Context.UserData);
+            if (userChange)
+                Context.Database.Save(Context.UserData);
 
             if (Context.Session.Advanced.HasChanges)
                 Logger.LogWarning("One or more documents were not saved after a command was run");

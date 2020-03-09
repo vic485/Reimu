@@ -1,5 +1,6 @@
 ﻿using System;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 #if !PUBLIC_BOT
 using Raven.Embedded;
 #endif
@@ -107,6 +108,12 @@ namespace Reimu.Database
             session.Delete($"guild-{id}");
             Logger.LogInfo($"Removed config for {name} ({id}).");
         }
+
+        /// <summary>
+        /// Returns a database session
+        /// </summary>
+        public IDocumentSession GetSession()
+            => _store.OpenSession();
 
         public void Dispose()
         {
