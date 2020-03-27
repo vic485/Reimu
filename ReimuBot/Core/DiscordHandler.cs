@@ -37,15 +37,15 @@ namespace Reimu.Core
             //_client.ChannelCreated
             //_client.ChannelDestroyed
             //_client.ChannelUpdated
-            //_client.GuildAvailable += GuildAvailable;
-            //_client.GuildUnavailable += GuildUnavailable;
+            _client.GuildAvailable += GuildAvailable;
+            _client.GuildUnavailable += GuildUnavailable;
             //_client.GuildUpdated
-            //_client.JoinedGuild += JoinedGuildAsync;
-            //_client.LeftGuild += LeftGuild;
+            _client.JoinedGuild += JoinedGuildAsync;
+            _client.LeftGuild += LeftGuild;
             //_client.LoggedIn
             //_client.LoggedOut
             //_client.MessageDeleted
-            //_client.MessageReceived += MessageReceivedAsync;
+            _client.MessageReceived += MessageReceivedAsync;
             //_client.MessageUpdated
             //_client.ReactionAdded += ReactionAddedAsync;
             //_client.ReactionRemoved += ReactionRemovedAsync;
@@ -144,6 +144,110 @@ namespace Reimu.Core
             }
 
             return Task.CompletedTask;
+        }
+
+        #region Guild
+
+        private Task GuildAvailable(SocketGuild guild)
+        {
+            if (!_database.Get<BotConfig>("Config").GuildBlacklist.Contains(guild.Id))
+                _database.AddGuild(guild.Id, guild.Name);
+            else
+                guild.LeaveAsync();
+
+            return Task.CompletedTask;
+        }
+
+        private Task GuildUnavailable(SocketGuild guild)
+        {
+            Logger.LogInfo($"Guild {guild.Name} has become unavailable.");
+            return Task.CompletedTask;
+        }
+
+        private async Task JoinedGuildAsync(SocketGuild guild)
+        {
+            var config = _database.Get<BotConfig>("Config");
+            if (!config.GuildBlacklist.Contains(guild.Id))
+            {
+                _database.AddGuild(guild.Id, guild.Name);
+                var defaultPrefix = config.Prefix;
+                // TODO: Send message to default channel
+            }
+            else
+            {
+                await guild.LeaveAsync();
+            }
+        }
+
+        private Task LeftGuild(SocketGuild guild)
+        {
+            _database.Remove($"guild-{guild.Id}");
+            return Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region Messages
+
+        private async Task MessageReceivedAsync(SocketMessage socketMessage)
+        {
+            if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
+                return;
+
+            var context = new BotContext(_client, userMessage, _serviceProvider);
+            if (context.Config.UserBlacklist.Contains(context.User.Id) ||
+                context.Config.GuildBlacklist.Contains(context.Guild.Id))
+                return;
+
+            var argPos = 0;
+            if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||
+                  userMessage.HasStringPrefix(context.GuildConfig.Prefix, ref argPos)))
+                return;
+
+            var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider, MultiMatchHandling.Best);
+            if (result.Error == null)
+            {
+                RecordCommand(context, argPos);
+                return;
+            }
+
+            switch (result.Error.Value)
+            {
+                case CommandError.UnknownCommand:
+                    break;
+                case CommandError.ParseFailed:
+                    break;
+                case CommandError.BadArgCount:
+                    break;
+                case CommandError.ObjectNotFound:
+                    break;
+                case CommandError.MultipleMatches:
+                    break;
+                case CommandError.UnmetPrecondition:
+                    // TODO: DM error if we can't send messages?
+                    if (!result.ErrorReason.Contains("SendMessages"))
+                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                    return;
+                case CommandError.Exception:
+                    break;
+                case CommandError.Unsuccessful:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        #endregion
+
+        private void RecordCommand(BotContext context, int argPos)
+        {
+            var search = _commandService.Search(context, argPos);
+            if (!search.IsSuccess) return;
+            var command = search.Commands.FirstOrDefault().Command;
+            var profile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
+            profile.CommandTimes[command.Module.Group ?? command.Name] = DateTime.UtcNow;
+            context.GuildConfig.UserProfiles[context.User.Id] = profile;
+            _database.Save(context.GuildConfig);
         }
     }
 }

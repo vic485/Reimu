@@ -12,7 +12,7 @@ namespace Reimu.Database
         private readonly IDocumentStore _store;
 
         public DatabaseHandler(IDocumentStore store) => _store = store;
-        
+
         /// <summary>
         /// Checks if the configuration exists, and creates it if not
         /// </summary>
@@ -50,6 +50,21 @@ namespace Reimu.Database
             Logger.LogVerbose($"Retrieving from database: {id}.");
             using var session = _store.OpenSession();
             return session.Load<T>(id);
+        }
+
+        public void AddGuild(ulong id, string name)
+        {
+            using var session = _store.OpenSession();
+            if (session.Advanced.Exists($"guild-{id}"))
+                return;
+
+            Save(new GuildConfig
+            {
+                Id = $"guild-{id}",
+                Prefix = Get<BotConfig>("Config").Prefix
+            });
+
+            Logger.LogInfo($"Added config for {name} ({id}).");
         }
 
         /// <summary>
