@@ -11,6 +11,7 @@ using Reimu.Common.Configuration;
 using Reimu.Common.Logging;
 using Reimu.Core;
 using Reimu.Database;
+using VndbSharp;
 
 namespace Reimu
 {
@@ -60,6 +61,7 @@ namespace Reimu
                 }.Initialize())
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<DiscordHandler>()
+                .AddSingleton(new Vndb(true).WithClientDetails("ReimuBot", Version))
                 .BuildServiceProvider();
     }
 }

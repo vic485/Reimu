@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Raven.Client.Documents.Session;
 using Reimu.Database;
 using Reimu.Database.Models;
+using VndbSharp;
 
 namespace Reimu.Core
 {
@@ -14,6 +15,7 @@ namespace Reimu.Core
         public DatabaseHandler Database { get; }
         public BotConfig Config { get; }
         public GuildConfig GuildConfig { get; }
+        public Vndb VndbClient { get; }
 
         public BotContext(DiscordSocketClient client, SocketUserMessage msg, IServiceProvider provider) : base(client,
             msg)
@@ -21,6 +23,7 @@ namespace Reimu.Core
             Database = provider.GetRequiredService<DatabaseHandler>();
             Session = Database.GetSession();
             Config = Database.Get<BotConfig>("Config");
+            VndbClient = provider.GetRequiredService<Vndb>();
 
             // NOTE: In DMs `Guild` is null which will cause this to throw, effectively killing most DM capabilities.
             // If we want DM commands we need to do additional checks here, DiscordHandler, etc however I do not see

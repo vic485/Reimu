@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ReimuBot.Common\ReimuBot.Common.csproj" />
+      <ProjectReference Include="..\VndbSharp\VndbSharp.csproj" />
     </ItemGroup>
 
     <ItemGroup>
