@@ -15,12 +15,12 @@ namespace Reimu.VisualNovels.Commands
         public async Task SearchCharacterAsync([Remainder] string name)
         {
             var charater = await Context.VndbClient.GetCharacterAsync(VndbFilters.Name.Fuzzy(name), VndbFlags.FullCharacter);
-            await ReplyAsync($"Found {charater.Count} results");
             var myChar = charater.FirstOrDefault();
 
             var embed = CreateEmbed(EmbedColor.Aqua)
                 .WithAuthor(myChar.OriginalName)
-                .WithDescription(myChar.Description)
+                // TODO: Replace Vndb bb code where possible, and remove tags if not
+                .WithDescription(myChar.Description.Replace("[spoiler]", "||").Replace("[/spoiler]", "||"))
                 .WithThumbnailUrl(myChar.Image)
                 .Build();
 

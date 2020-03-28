@@ -56,8 +56,8 @@ namespace Reimu.Core
             //_client.RoleDeleted
             //_client.RoleUpdated
             //_client.UserBanned
-            //_client.UserJoined += UserJoinedAsync;
-            //_client.UserLeft += UserLeftAsync;
+            _client.UserJoined += UserJoinedAsync;
+            _client.UserLeft += UserLeftAsync;
             //_client.UserUnbanned
             //_client.UserUpdated
             //_client.CurrentUserUpdated
@@ -235,6 +235,35 @@ namespace Reimu.Core
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        #endregion
+
+        #region User
+
+        private async Task UserJoinedAsync(SocketGuildUser user)
+        {
+            var config = _database.Get<GuildConfig>($"guild-{user.Guild.Id}");
+            var channel = user.Guild.GetTextChannel(config.JoinChannel);
+            if (!(channel == null || config.JoinMessages.Count == 0))
+            {
+                var message = config.JoinMessages[Rand.Range(0, config.JoinMessages.Count)]
+                    .Replace("{user}", user.Mention);
+                await channel.SendMessageAsync(message);
+            }
+            // TODO: Join role, re-mute user
+        }
+
+        private async Task UserLeftAsync(SocketGuildUser user)
+        {
+            var config = _database.Get<GuildConfig>($"guild-{user.Guild.Id}");
+            var channel = user.Guild.GetTextChannel(config.LeaveChannel);
+            if (channel == null || config.LeaveMessages.Count == 0)
+                return;
+
+            var message = config.LeaveMessages[Rand.Range(0, config.LeaveMessages.Count)]
+                .Replace("{user}", user.Nickname ?? user.Username);
+            await channel.SendMessageAsync(message);
         }
 
         #endregion

@@ -6,6 +6,11 @@
         <RootNamespace>Reimu</RootNamespace>
         <LangVersion>8</LangVersion>
         <RuntimeIdentifiers>win10-x64;ubuntu.18.04-x64</RuntimeIdentifiers>
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
 
     <ItemGroup>
