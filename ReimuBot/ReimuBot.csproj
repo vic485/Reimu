@@ -20,7 +20,7 @@
 
     <ItemGroup>
       <PackageReference Include="Discord.Net" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.1.20120.4" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.2.20160.3" />
       <PackageReference Include="RavenDB.Client" Version="4.2.101" />
     </ItemGroup>
 

@@ -71,7 +71,7 @@ namespace Reimu.Core
             return waitTask == trigger.Task ? (true, await trigger.Task) : (false, null);
         }
 
-        protected static EmbedBuilder CreateEmbed(EmbedColor color)
+        public static EmbedBuilder CreateEmbed(EmbedColor color)
             => new EmbedBuilder {Color = new Color((uint) color)};
 
         // TODO: This might be easier/cleaner to use a system to check flags on what was changed by a command

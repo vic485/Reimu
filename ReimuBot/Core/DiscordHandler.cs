@@ -171,7 +171,12 @@ namespace Reimu.Core
             {
                 _database.AddGuild(guild.Id, guild.Name);
                 var defaultPrefix = config.Prefix;
-                // TODO: Send message to default channel
+                var channel =
+                    guild.TextChannels.FirstOrDefault(x =>
+                        x.Name.Contains("general") || x.Name.Contains("chat") || x.Id == guild.Id) ??
+                    guild.DefaultChannel;
+                await channel.SendMessageAsync(
+                    $"Thank you for inviting me to your server. Guild prefix is `{defaultPrefix}`. Type `{defaultPrefix}help` for commands.");
             }
             else
             {
@@ -198,6 +203,15 @@ namespace Reimu.Core
             if (context.Config.UserBlacklist.Contains(context.User.Id) ||
                 context.Config.GuildBlacklist.Contains(context.Guild.Id))
                 return;
+
+            var guildProfile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
+            if ((DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
+            {
+                guildProfile.Xp += Rand.Range(10, 21);
+                guildProfile.LastMessage = DateTime.UtcNow;
+                context.GuildConfig.UserProfiles[context.User.Id] = guildProfile;
+                _database.Save(context.GuildConfig);
+            }
 
             var argPos = 0;
             if (!(userMessage.HasStringPrefix(context.Config.Prefix, ref argPos) ||

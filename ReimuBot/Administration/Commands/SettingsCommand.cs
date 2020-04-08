@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Reimu.Common.Logging;
 using Reimu.Core;
 
 namespace Reimu.Administration.Commands
@@ -18,10 +19,11 @@ namespace Reimu.Administration.Commands
         {
             return ReplyAsync(!Context.GuildConfig.JoinMessages.TryAdd(message)
                 ? "You are limited to five (5) join messages."
-                : "Join message added.");
+                : "Join message added.", updateGuild: true);
         }
 
-        [Command("joinmessage remove"), Alias("jm remove", "joinmessage r", "jm r")]
+        [Command("joinmessage remove"), Alias("jm remove", "joinmessage r", "jm r"),
+         RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task RemoveJoinMessage()
         {
             if (Context.GuildConfig.JoinMessages.Count == 0)
@@ -56,17 +58,18 @@ namespace Reimu.Administration.Commands
             await ReplyAsync("Join message removed.", updateGuild: true);
         }
 
-        [Command("joinchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("joinchannel"), RequireUserPermission(GuildPermission.ManageChannels),
+         RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetJoinChannel(SocketTextChannel channel = null)
         {
             if (channel == null)
             {
                 Context.GuildConfig.JoinChannel = 0;
-                return ReplyAsync("Join channel removed.");
+                return ReplyAsync("Join channel removed.", updateGuild: true);
             }
 
             Context.GuildConfig.JoinChannel = channel.Id;
-            return ReplyAsync($"Join channel set to {channel.Mention}.");
+            return ReplyAsync($"Join channel set to {channel.Mention}.", updateGuild: true);
         }
 
         [Command("leavemessage add"), Alias("lm add", "leavemessage a", "lm a"),
@@ -75,10 +78,11 @@ namespace Reimu.Administration.Commands
         {
             return ReplyAsync(!Context.GuildConfig.LeaveMessages.TryAdd(message)
                 ? "You are limited to five (5) leave messages."
-                : "Leave message added.");
+                : "Leave message added.", updateGuild: true);
         }
 
-        [Command("leavemessage remove"), Alias("lm remove", "leavemessage r", "lm r")]
+        [Command("leavemessage remove"), Alias("lm remove", "leavemessage r", "lm r"),
+         RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task RemoveLeaveMessage()
         {
             if (Context.GuildConfig.LeaveMessages.Count == 0)
@@ -113,17 +117,45 @@ namespace Reimu.Administration.Commands
             await ReplyAsync("Leave message removed.", updateGuild: true);
         }
 
-        [Command("leavechannel"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("leavechannel"), RequireUserPermission(GuildPermission.ManageChannels),
+         RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetLeaveChannel(SocketTextChannel channel = null)
         {
             if (channel == null)
             {
                 Context.GuildConfig.JoinChannel = 0;
-                return ReplyAsync("Leave channel removed.");
+                return ReplyAsync("Leave channel removed.", updateGuild: true);
             }
 
             Context.GuildConfig.JoinChannel = channel.Id;
-            return ReplyAsync($"Leave channel set to {channel.Mention}.");
+            return ReplyAsync($"Leave channel set to {channel.Mention}.", updateGuild: true);
+        }
+
+        [Command("modchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
+        public Task SetModChannel(SocketTextChannel channel = null)
+        {
+            if (channel == null)
+            {
+                Context.GuildConfig.Moderation.LogChannel = 0;
+                return ReplyAsync("Moderation channel removed.", updateGuild: true);
+            }
+
+            Context.GuildConfig.Moderation.LogChannel = channel.Id;
+            return ReplyAsync($"Moderation channel set to {channel.Mention}.", updateGuild: true);
+        }
+
+        [Command("muterole"), RequireUserPermission(ChannelPermission.ManageRoles),
+         RequireBotPermission(GuildPermission.ManageRoles)]
+        public Task SetMuteRole(SocketRole role = null)
+        {
+            if (role == null)
+            {
+                Context.GuildConfig.Moderation.MuteRole = 0;
+                return ReplyAsync("Mute role removed.", updateGuild: true);
+            }
+
+            Context.GuildConfig.Moderation.MuteRole = role.Id;
+            return ReplyAsync($"Mute role set to `{role.Name}`.", updateGuild: true);
         }
 
         private static string BuildMenu(List<string> menuItems)
