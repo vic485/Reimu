@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Discord.WebSocket;
 using Reimu.Database.Models.Parts;
 
 namespace Reimu
@@ -19,5 +20,14 @@ namespace Reimu
             list.Add(item);
             return true;
         }
+
+        /// <summary>
+        /// Check if a user is a higher rank than another
+        /// </summary>
+        /// <param name="user1">The user we are checking</param>
+        /// <param name="user2">User to check agains</param>
+        /// <returns>true if user1 is higher than user2, false otherwise</returns>
+        public static bool IsUserHigherThan(this SocketGuildUser user1, SocketGuildUser user2)
+            => user1.Hierarchy > user2.Hierarchy;
     }
 }

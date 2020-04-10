@@ -97,7 +97,6 @@ namespace Reimu.Core
         private async Task ReadyAsync()
         {
             Logger.LogInfo("Everything ready to run.");
-            // TODO: Change this to custom status if/when we can
             await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
         }
 
