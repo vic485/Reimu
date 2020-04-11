@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
+using Raven.Client.Documents.Replication;
 using Reimu.Core;
+using Reimu.Database.Models;
 using Reimu.Database.Models.Parts;
 
 namespace Reimu.Moderation
@@ -37,6 +40,31 @@ namespace Reimu.Moderation
             });
 
             context.Database.Save(context.GuildConfig);
+        }
+
+        public static async Task UpdateCaseAsync(BotContext context, int caseNum, string reason)
+        {
+            context.GuildConfig.Moderation.Cases[caseNum - 1].Reason = reason;
+            context.Database.Save(context.GuildConfig); // Quick save in case the log channel or message were deleted.
+
+            var modCase = context.GuildConfig.Moderation.Cases[caseNum - 1];
+            var channel = context.Guild.GetTextChannel(context.GuildConfig.Moderation.LogChannel);
+            var message = await channel.GetMessageAsync(modCase.MessageId) as IUserMessage;
+
+            var embed = message.Embeds.FirstOrDefault();
+            var user = embed.Fields.FirstOrDefault(x => x.Name == "User").Value;
+            var mod = embed.Fields.FirstOrDefault(x => x.Name == "Moderator").Value;
+            var newEmbed = new EmbedBuilder()
+                .WithColor(embed.Color.Value)
+                .WithAuthor(embed.Author.Value.Name, embed.Author.Value.IconUrl)
+                .AddField("User", user, true)
+                .AddField("Moderator", mod, true)
+                .AddField("Reason", reason)
+                .WithFooter(embed.Footer.Value.ToString())
+                .WithTimestamp(embed.Timestamp.Value)
+                .Build();
+
+            await message.ModifyAsync(x => x.Embed = newEmbed);
         }
 
         private static EmbedColor CaseColor(CaseType caseType)

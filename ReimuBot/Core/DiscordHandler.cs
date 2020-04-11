@@ -264,7 +264,14 @@ namespace Reimu.Core
                     .Replace("{user}", user.Mention);
                 await channel.SendMessageAsync(message);
             }
-            // TODO: Join role, re-mute user
+            // TODO: Join role
+
+            if (config.Moderation.MutedUsers.Contains(user.Id))
+            {
+                var muteRole = user.Guild.GetRole(config.Moderation.MuteRole);
+                if (muteRole != null)
+                    await user.AddRoleAsync(muteRole);
+            }
         }
 
         private async Task UserLeftAsync(SocketGuildUser user)

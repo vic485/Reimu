@@ -20,13 +20,17 @@ namespace Reimu.Moderation.Commands
                 return;
             }
 
-            // TODO: Is there a way to check if the bot is higher than the other user?
+            if (!Context.Guild.CurrentUser.IsUserHigherThan(user))
+            {
+                await ReplyAsync("Cannot perform this action on a user that is the same or ranked higher than me.");
+                return;
+            }
 
-            await user.KickAsync(reason);
-            await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
             await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(
                 $"**[Kicked from {Context.Guild.Name}]**\n" +
                 $"Reason: {reason ?? "No reason provided."}");
+            await user.KickAsync(reason);
+            await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
         }
     }
 }

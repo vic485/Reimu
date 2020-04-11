@@ -131,6 +131,22 @@ namespace Reimu.Administration.Commands
             return ReplyAsync($"Leave channel set to {channel.Mention}.", updateGuild: true);
         }
 
+        [Command("maxwarns"), RequireUserPermission(GuildPermission.KickMembers)]
+        public Task SetMaxWarns(int warnings = 0)
+        {
+            if (warnings <= 0)
+            {
+                Context.GuildConfig.Moderation.MaxWarnings = 0;
+                return ReplyAsync($"Kicking for maxing out warnings disabled.", updateGuild: true);
+            }
+            else
+            {
+                Context.GuildConfig.Moderation.MaxWarnings = warnings;
+                return ReplyAsync($"Will automatically kick users when they receive {warnings} warnings.",
+                    updateGuild: true);
+            }
+        }
+
         [Command("modchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetModChannel(SocketTextChannel channel = null)
         {

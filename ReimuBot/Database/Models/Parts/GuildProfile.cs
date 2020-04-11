@@ -9,6 +9,8 @@ namespace Reimu.Database.Models.Parts
         /// User's points specific to the guild
         /// </summary>
         public int Xp { get; set; }
+        
+        public int Warnings { get; set; }
 
         /// <summary>
         /// Last message the user sent that was counted for xp
