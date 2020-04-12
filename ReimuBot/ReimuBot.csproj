@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp5.0</TargetFramework>
+        <AssemblyName>Reimu</AssemblyName>
         <RootNamespace>Reimu</RootNamespace>
         <LangVersion>8</LangVersion>
         <RuntimeIdentifiers>win10-x64;ubuntu.18.04-x64</RuntimeIdentifiers>
@@ -11,6 +12,18 @@
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <PublishSingleFile>true</PublishSingleFile>
+        <AssemblyName>Reimu</AssemblyName>
+        <PlatformTarget>x64</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <AssemblyName>Reimu_d</AssemblyName>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
 
     <ItemGroup>
