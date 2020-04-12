@@ -5,16 +5,13 @@
 C# Discord bot - In early stages, expect massive, possibly breaking, changes until a suitable release point is achieved (when version string in Program.cs reads 1.0.0+)
 
 # Running Reimu
-Reimu contains two noteworthy configurations for running, Release and Public. Typical users will want to use 'Release'
-as it is designed for running as a single instance. Note that you will need both .Net Core 3.1 and 2.2.8 installed to 
-run this configuration. This is a limitation of the embedded database software used and should be fixed in the future.
+In order to build and run Reimu, you will need both the latest preview of the .Net 5.0 SDK installed, and a copy of RavenDB
+ setup and running. The easiest setup for testing will be to download the latest RavenDB server version, run the included sh or bat file, 
+ and follow the instructions to install a local unsecured database. This is the default setup expected by Reimu's settings.
 
-Those planning to run a distributed setup (multiple shards and/or database nodes) will want to use the 'Public' configuration.
-This only requires .Net Core 3.1 to run but requires you to setup database nodes yourself and be familiar with adding the
-required information to the `settings.json` file.
+If you want a more advanced setup of the database, refer to the documentation [here](https://ravendb.net/docs/article-page/4.2/csharp) and make sure to update the \
+`settings.json` file as needed, which is created the first time the bot is run next to the exe.
 
-Reimu can be run either through your ide with the appropriate configuration or from the command line.
+To run use
 
 `dotnet run -c Release`
-
-`dotnet run -c Public`

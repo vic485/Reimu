@@ -8,9 +8,9 @@ using Reimu.Database.Models.Parts;
 namespace Reimu.Moderation.Commands
 {
     [Name("Moderation")]
-    public class WarningCommand : ReimuBase
+    public class WarnCommand : ReimuBase
     {
-        [Command("warning"), RequireUserPermission(GuildPermission.KickMembers)]
+        [Command("warn"), RequireUserPermission(GuildPermission.KickMembers)]
         public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
             var profile = Context.GuildConfig.UserProfiles.GetProfile(user.Id);
