@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Reimu.Core;
 
@@ -11,15 +12,20 @@ namespace Reimu.General.Commands
         private CommandService _commandService;
 
         private HelpCommand(CommandService commandService) => _commandService = commandService;
-        
+
         [Command("help")]
         public Task PrintHelp()
         {
             var embed = CreateEmbed(EmbedColor.Red)
                 .WithAuthor("List of all commands", Context.Client.CurrentUser.GetAvatarUrl())
-                .WithFooter($"Reimu is currently in experimental form. If you would like to help contribute, please visit https://github.com/vic485/Reimu");
+                .WithFooter(
+                    $"Reimu is currently in experimental form. If you would like to help contribute, please visit https://github.com/vic485/Reimu");
 
-            foreach (var commands in _commandService.Commands.GroupBy(x => x.Module.Name).OrderBy(y => y.Key))
+            var commandList = _commandService.Commands.Where(x => x.Module.Name != "Owner");
+            if (!(Context.Channel as ITextChannel).IsNsfw)
+                commandList = commandList.Where(x => x.Module.Name != "Nsfw");
+
+            foreach (var commands in commandList.GroupBy(x => x.Module.Name).OrderBy(y => y.Key))
             {
                 embed.AddField(commands.Key,
                     $"`{string.Join("`, `", commands.Select(x => x.Module.Group ?? x.Name).Distinct())}`");
