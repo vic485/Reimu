@@ -8,7 +8,6 @@ namespace Reimu.General.Commands
     [Name("General")]
     public class ScoreboardCommand : ReimuBase
     {
-        // TODO: scoreboard pages
         [Command("scoreboard"), Alias("top")]
         public Task ShowScoreboardAsync()
         {
@@ -38,6 +37,35 @@ namespace Reimu.General.Commands
                     embed.AddField(CheckUser(key), $"**Total XP:** {value.Xp}");
                 }
             }
+
+            return ReplyAsync(string.Empty, embed.Build());
+        }
+
+        [Command("scoreboard"), Alias("top")]
+        public Task ScoreboardPage(int page)
+        {
+            if (Context.GuildConfig.UserProfiles.Count == 0)
+                return ReplyAsync("No guild profiles available");
+
+            if (page <= 1)
+            {
+                return ShowScoreboardAsync();
+            }
+
+            var pageOffset = 10 * (page - 1);
+            var embed = CreateEmbed(EmbedColor.Aqua).WithTitle($"Top 10: {Context.Guild.Name}");
+            var ordered = Context.GuildConfig.UserProfiles.OrderByDescending(x => x.Value.Xp)
+                .Where(y => y.Value.Xp != 0).Skip(pageOffset).Take(10).ToList();
+
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                embed.AddField($"[{i + 1 + pageOffset}] {CheckUser(ordered[i].Key)}",
+                    $"**Total XP:** {ordered[i].Value.Xp}");
+            }
+
+            embed.WithFooter(
+                $"Rank: {GetRank(Context.User.Id)} Total XP: {Context.GuildConfig.UserProfiles.GetProfile(Context.User.Id).Xp}",
+                Context.User.GetAvatarUrl());
 
             return ReplyAsync(string.Empty, embed.Build());
         }

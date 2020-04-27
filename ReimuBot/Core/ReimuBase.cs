@@ -74,7 +74,6 @@ namespace Reimu.Core
         public static EmbedBuilder CreateEmbed(EmbedColor color)
             => new EmbedBuilder {Color = new Color((uint) color)};
 
-        // TODO: This might be easier/cleaner to use a system to check flags on what was changed by a command
         private void SaveDocuments(bool configChange, bool guildChange)
         {
             if (configChange)

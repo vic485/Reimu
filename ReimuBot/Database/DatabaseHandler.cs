@@ -91,7 +91,7 @@ namespace Reimu.Database
         /// </summary>
         /// <param name="id">unique id of the data</param>
         /// <param name="name">Guild name</param>
-        public void Remove(string id) // TODO: Generic item removal
+        public void Remove(string id)
         {
             using var session = _store.OpenSession();
             session.Delete(id);
