@@ -37,9 +37,9 @@ namespace Reimu
 
         private static ServiceProvider SetupServices()
             => new ServiceCollection()
-                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+                .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
-                    ShardId = _settings.Shard,
+                    //ShardId = _settings.Shard,
                     TotalShards = _settings.TotalShards,
                     MessageCacheSize = 20,
                     AlwaysDownloadUsers = true,

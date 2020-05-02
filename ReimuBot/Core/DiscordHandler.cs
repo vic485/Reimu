@@ -13,13 +13,13 @@ namespace Reimu.Core
 {
     public class DiscordHandler
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordShardedClient _client;
         private readonly CommandService _commandService;
         private readonly DatabaseHandler _database;
 
         private IServiceProvider _serviceProvider;
 
-        public DiscordHandler(DiscordSocketClient client, CommandService commandService,
+        public DiscordHandler(DiscordShardedClient client, CommandService commandService,
             DatabaseHandler databaseHandler)
         {
             _client = client;
@@ -29,10 +29,10 @@ namespace Reimu.Core
 
         public async Task InitializeAsync(IServiceProvider provider)
         {
-            _client.Connected += Connected;
-            _client.Disconnected += Disconnected;
-            _client.Ready += ReadyAsync;
-            _client.LatencyUpdated += LatencyUpdated;
+            _client.ShardConnected += Connected;
+            _client.ShardDisconnected += Disconnected;
+            _client.ShardReady += ReadyAsync;
+            _client.ShardLatencyUpdated += LatencyUpdated;
             _client.Log += Log;
             //_client.ChannelCreated
             //_client.ChannelDestroyed
@@ -79,33 +79,34 @@ namespace Reimu.Core
         #region Connections
 
         // Called when (re)connected to Discord
-        private static Task Connected()
+        private static Task Connected(DiscordSocketClient client)
         {
-            Logger.LogInfo("Connected to Discord gateway.");
+            Logger.LogInfo($"Shard {client.ShardId + 1} has connected.");
             return Task.CompletedTask;
         }
 
         // Called when disconnected from Discord
-        private static Task Disconnected(Exception error)
+        private static Task Disconnected(Exception error, DiscordSocketClient client)
         {
             // Treat this as only a warning since the reasons for a loss of connection can vary in severity
-            Logger.LogWarning($"Disconnected from Discord: {error.Message}");
+            Logger.LogWarning($"Shard {client.ShardId + 1} disconnected from Discord: {error.Message}");
             return Task.CompletedTask;
         }
 
         // Called after connected to discord, and user data downloaded
-        private async Task ReadyAsync()
+        private async Task ReadyAsync(DiscordSocketClient client)
         {
-            Logger.LogInfo("Everything ready to run.");
-            await _client.SetGameAsync($"{_database.Get<BotConfig>("Config").Prefix}help");
+            Logger.LogInfo($"Shard {client.ShardId + 1} is ready.");
+            await client.SetGameAsync(
+                $"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
         }
 
         // TODO: Instead of latency use this for statuses/errors?
         // Called when the bot's latency changes
-        private Task LatencyUpdated(int old, int newer) => _client.SetStatusAsync(
-            _client.ConnectionState == ConnectionState.Disconnected || newer > 500 ? UserStatus.DoNotDisturb
-            : _client.ConnectionState == ConnectionState.Connecting || newer > 250 ? UserStatus.Idle
-            : _client.ConnectionState == ConnectionState.Connected || newer < 100 ? UserStatus.Online
+        private static Task LatencyUpdated(int old, int newer, DiscordSocketClient client) => client.SetStatusAsync(
+            client.ConnectionState == ConnectionState.Disconnected || newer > 500 ? UserStatus.DoNotDisturb
+            : client.ConnectionState == ConnectionState.Connecting || newer > 250 ? UserStatus.Idle
+            : client.ConnectionState == ConnectionState.Connected || newer < 100 ? UserStatus.Online
             : UserStatus.AFK);
 
         #endregion
@@ -203,10 +204,21 @@ namespace Reimu.Core
                 context.Config.GuildBlacklist.Contains(context.Guild.Id))
                 return;
 
-            var guildProfile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
-            if (context.GuildConfig.XpSettings.Enabled && (DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
+            // Global xp
+            if ((DateTime.UtcNow - context.UserData.LastMessage).TotalMinutes >= 2)
             {
-                guildProfile.Xp += Rand.Range(10, 21);
+                context.UserData.Xp += Rand.Range(10, 21);
+                context.UserData.LastMessage = DateTime.UtcNow;
+                _database.Save(context.UserData);
+            }
+
+            // Guild xp
+            var guildProfile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
+            if (context.GuildConfig.XpSettings.Enabled &&
+                (DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
+            {
+                guildProfile.Xp += Rand.Range(context.GuildConfig.XpSettings.Min,
+                    context.GuildConfig.XpSettings.Max + 1);
                 guildProfile.LastMessage = DateTime.UtcNow;
                 context.GuildConfig.UserProfiles[context.User.Id] = guildProfile;
                 _database.Save(context.GuildConfig);
@@ -261,7 +273,8 @@ namespace Reimu.Core
             var config = _database.Get<GuildConfig>($"guild-{guild.Id}");
 
             // Check for gateway reactions
-            if (config.VerificationMessage != 0 && message.Id == config.VerificationMessage)
+            if (config.VerificationMessage != 0 && message.Id == config.VerificationMessage &&
+                reaction.Emote.Name == "✅")
             {
                 var role = guild.GetRole(config.VerificationRole);
                 if (role != null && !user.Roles.Contains(role))
