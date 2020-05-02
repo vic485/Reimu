@@ -47,7 +47,7 @@ namespace Reimu.Core
             //_client.MessageDeleted
             _client.MessageReceived += MessageReceivedAsync;
             //_client.MessageUpdated
-            //_client.ReactionAdded += ReactionAddedAsync;
+            _client.ReactionAdded += ReactionAddedAsync;
             //_client.ReactionRemoved += ReactionRemovedAsync;
             //_client.ReactionsCleared
             //_client.RecipientAdded
@@ -204,7 +204,7 @@ namespace Reimu.Core
                 return;
 
             var guildProfile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
-            if ((DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
+            if (context.GuildConfig.XpSettings.Enabled && (DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
             {
                 guildProfile.Xp += Rand.Range(10, 21);
                 guildProfile.LastMessage = DateTime.UtcNow;
@@ -248,6 +248,29 @@ namespace Reimu.Core
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, ISocketMessageChannel channel,
+            SocketReaction reaction)
+        {
+            var message = await cacheable.GetOrDownloadAsync();
+            if (!(reaction.Channel is SocketGuildChannel guildChannel && reaction.User.Value is SocketGuildUser user))
+                return;
+
+            var guild = guildChannel.Guild;
+            var config = _database.Get<GuildConfig>($"guild-{guild.Id}");
+
+            // Check for gateway reactions
+            if (config.VerificationMessage != 0 && message.Id == config.VerificationMessage)
+            {
+                var role = guild.GetRole(config.VerificationRole);
+                if (role != null && !user.Roles.Contains(role))
+                    await user.AddRoleAsync(role);
+
+                return;
+            }
+
+            // TODO: Other big uses for reactions
         }
 
         #endregion

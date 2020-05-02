@@ -58,8 +58,7 @@ namespace Reimu.Administration.Commands
             await ReplyAsync("Join message removed.", updateGuild: true);
         }
 
-        [Command("joinchannel"), RequireUserPermission(GuildPermission.ManageChannels),
-         RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("joinchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetJoinChannel(SocketTextChannel channel = null)
         {
             if (channel == null)
@@ -117,8 +116,7 @@ namespace Reimu.Administration.Commands
             await ReplyAsync("Leave message removed.", updateGuild: true);
         }
 
-        [Command("leavechannel"), RequireUserPermission(GuildPermission.ManageChannels),
-         RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("leavechannel"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetLeaveChannel(SocketTextChannel channel = null)
         {
             if (channel == null)
@@ -160,7 +158,7 @@ namespace Reimu.Administration.Commands
             return ReplyAsync($"Moderation channel set to {channel.Mention}.", updateGuild: true);
         }
 
-        [Command("muterole"), RequireUserPermission(ChannelPermission.ManageRoles),
+        [Command("muterole"), RequireUserPermission(GuildPermission.ManageRoles),
          RequireBotPermission(GuildPermission.ManageRoles)]
         public Task SetMuteRole(SocketRole role = null)
         {
@@ -172,6 +170,30 @@ namespace Reimu.Administration.Commands
 
             Context.GuildConfig.Moderation.MuteRole = role.Id;
             return ReplyAsync($"Mute role set to `{role.Name}`.", updateGuild: true);
+        }
+
+        [Command("verifymessage"), RequireUserPermission(GuildPermission.ManageMessages)]
+        public Task SetVerifyMessage(ulong messageId = 0)
+        {
+            Context.GuildConfig.VerificationMessage = messageId;
+            return ReplyAsync(
+                messageId == 0
+                    ? "Verification message removed."
+                    : "Verification message set. If the role has been set members can verify by reacting with ✅.",
+                updateGuild: true);
+        }
+
+        [Command("verifyrole"), RequireUserPermission(GuildPermission.ManageRoles)]
+        public Task SetVerifyRole(SocketRole role = null)
+        {
+            if (role == null)
+            {
+                Context.GuildConfig.VerificationRole = 0;
+                return ReplyAsync("Verification role removed.", updateGuild: true);
+            }
+
+            Context.GuildConfig.VerificationRole = role.Id;
+            return ReplyAsync($"Verification role set to `{role.Name}`.", updateGuild: true);
         }
 
         private static string BuildMenu(List<string> menuItems)
