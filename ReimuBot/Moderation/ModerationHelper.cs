@@ -1,14 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Raven.Client.Documents.Replication;
 using Reimu.Core;
-using Reimu.Database.Models;
 using Reimu.Database.Models.Parts;
 
 namespace Reimu.Moderation
 {
-    public class ModerationHelper
+    public static class ModerationHelper
     {
         public static async Task LogAsync(BotContext context, IUser user, CaseType caseType, string reason)
         {

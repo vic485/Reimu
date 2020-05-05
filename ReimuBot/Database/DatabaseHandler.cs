@@ -52,6 +52,19 @@ namespace Reimu.Database
             return session.Load<T>(id);
         }
 
+        /// <summary>
+        /// Retrieves all items in the database filtered by type and id prefix
+        /// </summary>
+        /// <param name="prefix">Beginning portion of id to match</param>
+        /// <typeparam name="T">Type deriving from <see cref="DatabaseItem"/></typeparam>
+        /// <returns>Array of database items matching the provided type and prefix</returns>
+        public T[] GetAll<T>(string prefix) where T : DatabaseItem
+        {
+            Logger.LogVerbose($"Retrieving all {typeof(T)} from database.");
+            using var session = _store.OpenSession();
+            return session.Advanced.LoadStartingWith<T>(prefix);
+        }
+
         public void AddGuild(ulong id, string name)
         {
             using var session = _store.OpenSession();

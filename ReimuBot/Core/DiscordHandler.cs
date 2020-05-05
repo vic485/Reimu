@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Reimu.Common.Logging;
 using Reimu.Database;
 using Reimu.Database.Models;
+using Reimu.Moderation;
 
 namespace Reimu.Core
 {
@@ -25,6 +26,11 @@ namespace Reimu.Core
             _client = client;
             _commandService = commandService;
             _database = databaseHandler;
+        }
+
+        ~DiscordHandler()
+        {
+            _client.LogoutAsync();
         }
 
         public async Task InitializeAsync(IServiceProvider provider)
@@ -203,6 +209,13 @@ namespace Reimu.Core
             if (context.Config.UserBlacklist.Contains(context.User.Id) ||
                 context.Config.GuildBlacklist.Contains(context.Guild.Id))
                 return;
+            
+            // Automod, if enabled
+            if (context.GuildConfig.Moderation.InviteBlock)
+            {
+                if (await AutoModerator.CheckForInvite(userMessage, context.User as SocketGuildUser))
+                    return;
+            }
 
             // Global xp
             if ((DateTime.UtcNow - context.UserData.LastMessage).TotalMinutes >= 2)
