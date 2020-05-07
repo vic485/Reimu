@@ -12,11 +12,11 @@ namespace Reimu.General.Commands
         {
             var embed = CreateEmbed(EmbedColor.Red)
                 .WithAuthor(
-                    $"Shard Status | You are on shard {Context.Client.GetShardFor(Context.Guild).ShardId}/{Context.Client.Shards.Count}");
+                    $"Shard Status | You are on shard {Context.Client.GetShardIdFor(Context.Guild) + 1}/{Context.Client.Shards.Count}");
 
             foreach (var shard in Context.Client.Shards)
             {
-                embed.AddField($"Shard {shard.ShardId}", shard.ConnectionState);
+                embed.AddField($"Shard {shard.ShardId + 1}", shard.ConnectionState, true);
             }
 
             return ReplyAsync(string.Empty, embed.Build());

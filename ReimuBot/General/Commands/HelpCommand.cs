@@ -18,6 +18,7 @@ namespace Reimu.General.Commands
         {
             var embed = CreateEmbed(EmbedColor.Red)
                 .WithAuthor("List of all commands", Context.Client.CurrentUser.GetAvatarUrl())
+                .WithDescription("For full command documentation see: https://vic485.xyz/Reimu")
                 .WithFooter(
                     $"Reimu is currently in experimental form. If you would like to help contribute, please visit https://github.com/vic485/Reimu");
 

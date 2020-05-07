@@ -62,7 +62,7 @@ namespace Reimu.Database
         {
             Logger.LogVerbose($"Retrieving all {typeof(T)} from database.");
             using var session = _store.OpenSession();
-            return session.Advanced.LoadStartingWith<T>(prefix);
+            return session.Advanced.LoadStartingWith<T>(prefix, pageSize: int.MaxValue);
         }
 
         public void AddGuild(ulong id, string name)

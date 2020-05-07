@@ -93,10 +93,10 @@ namespace Reimu.General.Commands
         {
             if (page <= 1)
                 page = 1;
-            
+
             var profiles = Context.Database.GetAll<UserData>("user-");
             var pageOffset = 10 * (page - 1);
-            var embed = CreateEmbed(EmbedColor.Aqua).WithTitle($"Guild Leaderboard: {Context.Guild.Name}");
+            var embed = CreateEmbed(EmbedColor.Aqua).WithTitle($"Global Leaderboard");
             var ordered = profiles.OrderByDescending(x => x.Xp)
                 .Where(y => y.Xp != 0).Skip(pageOffset).Take(10).ToList();
 
@@ -107,7 +107,7 @@ namespace Reimu.General.Commands
             }
 
             embed.WithFooter(
-                $"Total XP: {Context.GuildConfig.UserProfiles.GetProfile(Context.User.Id).Xp}",
+                $"Total XP: {Context.UserData.Xp}",
                 Context.User.GetAvatarUrl());
 
             return ReplyAsync(string.Empty, embed.Build());
