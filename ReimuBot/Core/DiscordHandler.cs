@@ -209,7 +209,7 @@ namespace Reimu.Core
             if (context.Config.UserBlacklist.Contains(context.User.Id) ||
                 context.Config.GuildBlacklist.Contains(context.Guild.Id))
                 return;
-            
+
             // Automod, if enabled
             if (context.GuildConfig.Moderation.InviteBlock)
             {
@@ -228,6 +228,9 @@ namespace Reimu.Core
             // Guild xp
             var guildProfile = context.GuildConfig.UserProfiles.GetProfile(context.User.Id);
             if (context.GuildConfig.XpSettings.Enabled &&
+                !(context.GuildConfig.XpSettings.BlockedChannels.Contains(context.Channel.Id) ||
+                  (context.User as SocketGuildUser).Roles.Any(x =>
+                      context.GuildConfig.XpSettings.BlockedRoles.Contains(x.Id))) &&
                 (DateTime.UtcNow - guildProfile.LastMessage).TotalMinutes >= 2)
             {
                 guildProfile.Xp += Rand.Range(context.GuildConfig.XpSettings.Min,
