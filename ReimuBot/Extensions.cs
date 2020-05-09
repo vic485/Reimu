@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Discord.WebSocket;
 using Reimu.Database.Models.Parts;
 
@@ -29,5 +30,21 @@ namespace Reimu
         /// <returns>true if user1 is higher than user2, false otherwise</returns>
         public static bool IsUserHigherThan(this SocketGuildUser user1, SocketGuildUser user2)
             => user1.Hierarchy > user2.Hierarchy;
+
+        /// <summary>
+        /// Finds the next time to run a scheduled task. Always the upcoming Sunday at midnight.
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <returns></returns>
+        public static DateTime GetNextScheduleTime(this DateTime currentTime)
+        {
+            var start = (int) currentTime.DayOfWeek;
+            var target = (int) DayOfWeek.Sunday;
+            if (target <= start)
+                target += 7;
+
+            // Date property "floors" our DateTime to midnight
+            return currentTime.AddDays(target - start).Date;
+        }
     }
 }

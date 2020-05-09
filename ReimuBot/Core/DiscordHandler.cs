@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Reimu.Common.Logging;
 using Reimu.Database;
 using Reimu.Database.Models;
+using Reimu.Fun;
 using Reimu.Moderation;
 
 namespace Reimu.Core
@@ -52,7 +53,7 @@ namespace Reimu.Core
             //_client.LoggedOut
             //_client.MessageDeleted
             _client.MessageReceived += MessageReceivedAsync;
-            //_client.MessageUpdated
+            _client.MessageUpdated += MessageUpdated;
             _client.ReactionAdded += ReactionAddedAsync;
             //_client.ReactionRemoved += ReactionRemovedAsync;
             //_client.ReactionsCleared
@@ -217,6 +218,8 @@ namespace Reimu.Core
                     return;
             }
 
+            await MessageFun.RepeatText(userMessage);
+
             // Global xp
             if ((DateTime.UtcNow - context.UserData.LastMessage).TotalMinutes >= 2)
             {
@@ -275,6 +278,31 @@ namespace Reimu.Core
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        /// <summary>
+        /// When message is edited
+        /// </summary>
+        /// <param name="cacheable">Contains the original message</param>
+        /// <param name="socketMessage">The updated message</param>
+        /// <param name="channel">Channel the message was in</param>
+        /// <returns></returns>
+        public async Task MessageUpdated(Cacheable<IMessage, ulong> cacheable, SocketMessage socketMessage, ISocketMessageChannel channel)
+        {
+            var message1 = await cacheable.GetOrDownloadAsync();
+            if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
+                return;
+
+            var context = new BotContext(_client, userMessage, _serviceProvider);
+            if (context.Config.GuildBlacklist.Contains(context.Guild.Id))
+                return;
+            
+            // Automod, if enabled
+            if (context.GuildConfig.Moderation.InviteBlock)
+            {
+                if (await AutoModerator.CheckForInvite(userMessage, context.User as SocketGuildUser))
+                    return;
             }
         }
 

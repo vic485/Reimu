@@ -11,6 +11,7 @@ using Reimu.Common.Configuration;
 using Reimu.Common.Logging;
 using Reimu.Core;
 using Reimu.Database;
+using Reimu.Scheduling;
 using VndbSharp;
 
 namespace Reimu
@@ -28,6 +29,7 @@ namespace Reimu
             await using var services = SetupServices();
             services.GetRequiredService<DatabaseHandler>().Initialize();
             await services.GetRequiredService<DiscordHandler>().InitializeAsync(services);
+            services.GetRequiredService<SchedulerService>().SetupBaseTasks();
 
             // TODO: Here would be a command line program to manage the bot
             // Mainly so it can be shutdown safely (close/dispose) all services.
@@ -61,6 +63,7 @@ namespace Reimu
                 }.Initialize())
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<DiscordHandler>()
+                .AddSingleton<SchedulerService>()
                 .AddSingleton(new Vndb(true).WithClientDetails("ReimuBot", Version))
                 .BuildServiceProvider();
     }
