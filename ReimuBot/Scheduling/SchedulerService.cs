@@ -57,6 +57,7 @@ namespace Reimu.Scheduling
                     continue;
 
                 Logger.LogInfo($"Removing data {user.Id}.");
+                _database.Remove(user.Id);
             }
 
             return Task.CompletedTask;

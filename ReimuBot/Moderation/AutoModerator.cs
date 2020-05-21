@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -13,7 +13,7 @@ namespace Reimu.Moderation
         public static async Task<bool> CheckForInvite(SocketUserMessage message, SocketGuildUser user)
         {
             // We will consider those with permission to manage messages moderators who can post invite links
-            if (!Invites.Any(message.Content.Contains) || user.GuildPermissions.Has(GuildPermission.ManageMessages))
+            if (user.GuildPermissions.Has(GuildPermission.ManageMessages) || !Invites.Any(message.Content.Contains))
                 return false;
 
             await message.DeleteAsync();
