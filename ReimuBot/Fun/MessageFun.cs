@@ -2,15 +2,16 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Reimu.Core;
 
 namespace Reimu.Fun
 {
     public static class MessageFun
     {
-        public static async Task<bool> RepeatText(SocketMessage socketMessage)
+        public static async Task<bool> RepeatText(BotContext context)
         {
-            var reply = socketMessage.Content.ToLower();
-            var otherMessages = (await socketMessage.Channel.GetMessagesAsync(3).FlattenAsync()).ToList();
+            var reply = context.Message.Content.ToLower();
+            var otherMessages = (await context.Channel.GetMessagesAsync(3).FlattenAsync()).ToList();
 
             if (otherMessages.Count < 3)
                 return false;
@@ -30,8 +31,20 @@ namespace Reimu.Fun
                 return false;
             }
 
-            await socketMessage.Channel.SendMessageAsync(reply);
+            // Don't react if bot is in the messages
+            if (otherMessages.Any(x => x.Author.Id == context.Client.CurrentUser.Id))
+            {
+                return false;
+            }
+
+            if (!PercentChance(20))
+                return false;
+
+            await context.Channel.SendMessageAsync(context.Message.Content);
             return true;
         }
+
+        private static bool PercentChance(int percentage)
+            => Rand.Range(0, 100) < percentage;
     }
 }

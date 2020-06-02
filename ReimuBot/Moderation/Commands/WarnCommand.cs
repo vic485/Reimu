@@ -13,6 +13,12 @@ namespace Reimu.Moderation.Commands
         [Command("warn"), RequireUserPermission(GuildPermission.KickMembers)]
         public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
+            if (user.Id == Context.Client.CurrentUser.Id)
+            {
+                await ReplyAsync("no.");
+                return;
+            }
+
             var profile = Context.GuildConfig.UserProfiles.GetProfile(user.Id);
             profile.Warnings++;
             Context.GuildConfig.UserProfiles[user.Id] = profile;
@@ -22,9 +28,10 @@ namespace Reimu.Moderation.Commands
             {
                 await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(
                     $"**[Kicked from {Context.Guild.Name}]**\n" +
-                    $"Reason: {reason ?? "No reason provided."}");
+                    $"Reason: {reason ?? "No reason provided. -- Maxed out warnings."}");
                 await user.KickAsync(reason);
                 await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
+                await ReplyAsync($"{user.Nickname ?? user.Username} maxed out warnings and was kicked.");
             }
             else
             {
@@ -32,6 +39,7 @@ namespace Reimu.Moderation.Commands
                     $"**[Warned in {Context.Guild.Name}]**\n" +
                     $"Reason: {reason ?? "No reason provided."}");
                 await ModerationHelper.LogAsync(Context, user, CaseType.Warning, reason);
+                await ReplyAsync($"{user.Nickname ?? user.Username} was warned.");
             }
         }
     }

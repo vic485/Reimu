@@ -50,6 +50,25 @@ namespace Reimu.Database.Models
         public GuildModeration Moderation { get; set; } = new GuildModeration();
 
         /// <summary>
+        /// The default listing of the guild's self-assignable roles
+        /// </summary>
+        public SelfRoleMenu DefaultRoleMenu
+        {
+            get
+            {
+                if (!SelfroleMenus.ContainsKey("default"))
+                    SelfroleMenus.Add("default", new SelfRoleMenu());
+
+                return SelfroleMenus["default"];
+            }
+        }
+
+        /// <summary>
+        /// Collection of self-assignable role menus
+        /// </summary>
+        public Dictionary<string, SelfRoleMenu> SelfroleMenus { get; set; } = new Dictionary<string, SelfRoleMenu>();
+
+        /// <summary>
         /// Guild specific profile data for users
         /// </summary>
         public Dictionary<ulong, GuildProfile> UserProfiles { get; set; } = new Dictionary<ulong, GuildProfile>();

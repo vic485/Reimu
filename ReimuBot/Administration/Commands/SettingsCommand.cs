@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -13,6 +14,19 @@ namespace Reimu.Administration.Commands
     [Name("Administration"), Group("settings"), Alias("set", "setting")]
     public class SettingsCommand : ReimuBase
     {
+        [Command("auditchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
+        public Task SetAuditChannel(SocketTextChannel channel = null)
+        {
+            if (channel == null)
+            {
+                Context.GuildConfig.Moderation.AuditChannel = 0;
+                return ReplyAsync("Audit channel removed.", updateGuild: true);
+            }
+
+            Context.GuildConfig.Moderation.AuditChannel = channel.Id;
+            return ReplyAsync($"Audit channel set to {channel.Mention}.", updateGuild: true);
+        }
+        
         [Command("joinmessage add"), Alias("jm add", "joinmessage a", "jm a"),
          RequireUserPermission(GuildPermission.ManageChannels)]
         public Task AddJoinMessage([Remainder] string message)
@@ -121,11 +135,11 @@ namespace Reimu.Administration.Commands
         {
             if (channel == null)
             {
-                Context.GuildConfig.JoinChannel = 0;
+                Context.GuildConfig.LeaveChannel = 0;
                 return ReplyAsync("Leave channel removed.", updateGuild: true);
             }
 
-            Context.GuildConfig.JoinChannel = channel.Id;
+            Context.GuildConfig.LeaveChannel = channel.Id;
             return ReplyAsync($"Leave channel set to {channel.Mention}.", updateGuild: true);
         }
 
@@ -194,6 +208,55 @@ namespace Reimu.Administration.Commands
 
             Context.GuildConfig.VerificationRole = role.Id;
             return ReplyAsync($"Verification role set to `{role.Name}`.", updateGuild: true);
+        }
+
+        [Command("wordbl add"), RequireUserPermission(GuildPermission.ManageMessages)]
+        public Task WordBlacklistAdd(params string[] words)
+        {
+            foreach (var word in words)
+            {
+                if (Context.GuildConfig.Moderation.WordBlacklist.Contains(word))
+                    continue;
+                
+                Context.GuildConfig.Moderation.WordBlacklist.Add(word);
+            }
+            
+            return ReplyAsync("Word(s) added to blacklist.", updateGuild: true);
+        }
+
+        [Command("wordbl remove"), RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task WordBlacklistRemove()
+        {
+            if (!Context.GuildConfig.Moderation.WordBlacklist.Any())
+            {
+                await ReplyAsync("Guild has no blacklisted words.");
+                return;
+            }
+
+            var menu = CreateEmbed(EmbedColor.Red)
+                .WithTitle("Remove Blacklisted Word")
+                .WithDescription(BuildMenu(Context.GuildConfig.Moderation.WordBlacklist))
+                .WithFooter("Type a **number** from the above menu to remove.")
+                .Build();
+            
+            var message = await ReplyWaitAsync(string.Empty, menu, timeOut: TimeSpan.FromSeconds(15));
+            if (!message.Item1)
+                return;
+
+            if (!int.TryParse(message.Item2.Content, out var result))
+            {
+                await ReplyAsync("Invalid input, type a number. e.g. \"0\"");
+                return;
+            }
+
+            if (result < 0 || result >= Context.GuildConfig.Moderation.WordBlacklist.Count)
+            {
+                await ReplyAsync("Invalid input, type a number from the menu. e.g. \"0\"");
+                return;
+            }
+
+            Context.GuildConfig.Moderation.WordBlacklist.RemoveAt(result);
+            await ReplyAsync("Word removed.", updateGuild: true);
         }
 
         private static string BuildMenu(List<string> menuItems)

@@ -14,6 +14,12 @@ namespace Reimu.Moderation.Commands
          RequireUserPermission(GuildPermission.KickMembers)]
         public async Task KickUserAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
+            if (user.Id == Context.Client.CurrentUser.Id)
+            {
+                await ReplyAsync("no.");
+                return;
+            }
+
             if (!(Context.User as SocketGuildUser).IsUserHigherThan(user))
             {
                 await ReplyAsync("Cannot perform this action on a user that is the same or ranked higher than you.");
@@ -31,6 +37,7 @@ namespace Reimu.Moderation.Commands
                 $"Reason: {reason ?? "No reason provided."}");
             await user.KickAsync(reason);
             await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
+            await ReplyAsync($"{user.Nickname ?? user.Username} was kicked.");
         }
     }
 }

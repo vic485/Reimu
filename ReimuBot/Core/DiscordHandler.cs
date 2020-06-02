@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Reimu.Common.Logging;
 using Reimu.Database;
 using Reimu.Database.Models;
+using Reimu.Database.Models.Parts;
 using Reimu.Fun;
 using Reimu.Moderation;
 
@@ -51,11 +52,11 @@ namespace Reimu.Core
             _client.LeftGuild += LeftGuild;
             //_client.LoggedIn
             //_client.LoggedOut
-            //_client.MessageDeleted
+            _client.MessageDeleted += MessageDeletedAsync;
             _client.MessageReceived += MessageReceivedAsync;
             _client.MessageUpdated += MessageUpdated;
             _client.ReactionAdded += ReactionAddedAsync;
-            //_client.ReactionRemoved += ReactionRemovedAsync;
+            _client.ReactionRemoved += ReactionRemovedAsync;
             //_client.ReactionsCleared
             //_client.RecipientAdded
             //_client.RecipientRemoved
@@ -201,6 +202,29 @@ namespace Reimu.Core
 
         #region Messages
 
+        private async Task MessageDeletedAsync(Cacheable<IMessage, ulong> cacheable, ISocketMessageChannel channel)
+        {
+            var downloadMessage = await cacheable.GetOrDownloadAsync();
+
+            if (!(downloadMessage is SocketUserMessage userMessage) || downloadMessage.Author.IsBot)
+                return;
+
+            var context = new BotContext(_client, userMessage, _serviceProvider);
+            var auditChannel = context.Guild.GetTextChannel(context.GuildConfig.Moderation.AuditChannel);
+
+            if (auditChannel == null)
+                return;
+
+            var embed = new EmbedBuilder()
+                .WithColor((uint) EmbedColor.Red)
+                .WithAuthor(userMessage.Author.Username, userMessage.Author.GetAvatarUrl())
+                .WithDescription(
+                    $"Message deleted in {(context.Channel as SocketTextChannel).Mention}\n{context.Message.Content}")
+                .Build();
+
+            await auditChannel.SendMessageAsync(string.Empty, embed: embed);
+        }
+
         private async Task MessageReceivedAsync(SocketMessage socketMessage)
         {
             if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
@@ -218,7 +242,10 @@ namespace Reimu.Core
                     return;
             }
 
-            await MessageFun.RepeatText(userMessage);
+            if (await AutoModerator.CheckForBlacklistedWord(context))
+                return;
+
+            await MessageFun.RepeatText(context);
 
             // Global xp
             if ((DateTime.UtcNow - context.UserData.LastMessage).TotalMinutes >= 2)
@@ -288,7 +315,8 @@ namespace Reimu.Core
         /// <param name="socketMessage">The updated message</param>
         /// <param name="channel">Channel the message was in</param>
         /// <returns></returns>
-        public async Task MessageUpdated(Cacheable<IMessage, ulong> cacheable, SocketMessage socketMessage, ISocketMessageChannel channel)
+        public async Task MessageUpdated(Cacheable<IMessage, ulong> cacheable, SocketMessage socketMessage,
+            ISocketMessageChannel channel)
         {
             var message1 = await cacheable.GetOrDownloadAsync();
             if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
@@ -297,7 +325,7 @@ namespace Reimu.Core
             var context = new BotContext(_client, userMessage, _serviceProvider);
             if (context.Config.GuildBlacklist.Contains(context.Guild.Id))
                 return;
-            
+
             // Automod, if enabled
             if (context.GuildConfig.Moderation.InviteBlock)
             {
@@ -311,6 +339,9 @@ namespace Reimu.Core
         {
             var message = await cacheable.GetOrDownloadAsync();
             if (!(reaction.Channel is SocketGuildChannel guildChannel && reaction.User.Value is SocketGuildUser user))
+                return;
+
+            if (user.IsBot)
                 return;
 
             var guild = guildChannel.Guild;
@@ -328,6 +359,64 @@ namespace Reimu.Core
             }
 
             // TODO: Other big uses for reactions
+
+            // Check if message is a self role menu
+            var rm = FindRoleMenu(config, reaction.Channel.Id, message.Id);
+            if (rm == null)
+                return;
+
+            var final = reaction.Emote.ToString();
+            // Animated emotes come in without the 'a' prefix for some reason
+            if (!rm.SelfRoles.ContainsKey(final))
+            {
+                var index = final.IndexOf("<") + 1;
+                if (index != 1)
+                    final = final.Insert(index, "a");
+
+                if (!rm.SelfRoles.ContainsKey(final))
+                    return;
+            }
+
+            var selfRole = guild.GetRole(rm.SelfRoles[final]);
+            await user.AddRoleAsync(selfRole);
+        }
+
+        private async Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> cacheable, ISocketMessageChannel channel,
+            SocketReaction reaction)
+        {
+            // This will probably only be needed for self roles
+            var message = await cacheable.GetOrDownloadAsync();
+
+            if (!(reaction.Channel is SocketGuildChannel guildChannel && reaction.User.Value is SocketGuildUser user))
+                return;
+
+            if (user.IsBot)
+                return;
+
+            var guild = guildChannel.Guild;
+            var config = _database.Get<GuildConfig>($"guild-{guild.Id}");
+
+            var rm = FindRoleMenu(config, reaction.Channel.Id, message.Id);
+            if (rm == null)
+                return;
+            
+            var final = reaction.Emote.ToString();
+            // Animated emotes come in without the 'a' prefix for some reason
+            if (!rm.SelfRoles.ContainsKey(final))
+            {
+                var index = final.IndexOf("<") + 1;
+                if (index != 1)
+                    final = final.Insert(index, "a");
+
+                if (!rm.SelfRoles.ContainsKey(final))
+                    return;
+            }
+
+            var role = guild.GetRole(rm.SelfRoles[final]);
+            if (!user.Roles.Contains(role))
+                return;
+
+            await user.RemoveRoleAsync(role);
         }
 
         #endregion
@@ -341,7 +430,7 @@ namespace Reimu.Core
             if (!(channel == null || config.JoinMessages.Count == 0))
             {
                 var message = config.JoinMessages[Rand.Range(0, config.JoinMessages.Count)]
-                    .Replace("{user}", user.Mention);
+                    .Replace("{user}", user.Mention).Replace("{guild}", $"**{user.Guild.Name}**");
                 await channel.SendMessageAsync(message);
             }
             // TODO: Join role
@@ -377,6 +466,18 @@ namespace Reimu.Core
             profile.CommandTimes[command.Module.Group ?? command.Name] = DateTime.UtcNow;
             context.GuildConfig.UserProfiles[context.User.Id] = profile;
             _database.Save(context.GuildConfig);
+        }
+
+        private SelfRoleMenu FindRoleMenu(GuildConfig config, ulong channelId, ulong messageId)
+        {
+            foreach (var rm in config.SelfroleMenus.Values)
+            {
+                if (rm.Channel.HasValue && rm.Channel.Value == channelId && rm.Message.HasValue &&
+                    rm.Message.Value == messageId)
+                    return rm;
+            }
+
+            return null;
         }
     }
 }

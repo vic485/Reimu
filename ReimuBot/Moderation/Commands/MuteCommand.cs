@@ -10,9 +10,16 @@ namespace Reimu.Moderation.Commands
     [Name("Moderation")]
     public class MuteCommand : ReimuBase
     {
-        [Command("mute"), RequireUserPermission(GuildPermission.ManageRoles),RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("mute"), RequireUserPermission(GuildPermission.ManageRoles),
+         RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task MuteUserAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
+            if (user.Id == Context.Client.CurrentUser.Id)
+            {
+                await ReplyAsync("no.");
+                return;
+            }
+
             var role = Context.Guild.GetRole(Context.GuildConfig.Moderation.MuteRole);
             if (role == null)
             {
