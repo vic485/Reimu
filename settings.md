@@ -3,6 +3,7 @@
 > Documentation to come
 
 ```
+set auditchannel #audit-logs                   -- leave bland to remove
 set joinmessage add Welcome {user} to {guild}!
 set joinmessage remove
 set joinchannel #welcome                       -- leave blank to remove

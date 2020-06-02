@@ -1,5 +1,6 @@
-- Admininstration
+- Administration
 
+  - [Selfrole](selfrole.md)
   - [Settings](settings.md)
   - [XP](xp.md)
 
@@ -10,6 +11,7 @@
 - General
 
   - [Avatar](avatar.md)
+  - [Choose](choose.md)
   - BotInfo
   - Help
   - Ping
