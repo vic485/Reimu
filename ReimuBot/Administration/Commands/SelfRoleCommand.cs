@@ -74,9 +74,8 @@ namespace Reimu.Administration.Commands
                 Context.GuildConfig.SelfroleMenus.Add(listName, new SelfRoleMenu());
                 await ReplyAsync($"Created {listName} self role menu.", updateGuild: true);
             }
-            
         }
-        
+
         [Command("list delete")]
         public async Task SelfRoleListDeleteAsync(string listName)
         {
@@ -89,7 +88,6 @@ namespace Reimu.Administration.Commands
                 Context.GuildConfig.SelfroleMenus.Remove(listName);
                 await ReplyAsync($"Deleted {listName} self role menu.", updateGuild: true);
             }
-            
         }
 
         [Command("remove")]
@@ -114,7 +112,7 @@ namespace Reimu.Administration.Commands
         #endregion
 
         #region Get Methods
-        
+
         private IEmote GetEmote(string key)
         {
             IEmote result;
@@ -139,7 +137,7 @@ namespace Reimu.Administration.Commands
 
             return null;
         }
-        
+
         #endregion
 
         #region Internal Methods
@@ -190,6 +188,7 @@ namespace Reimu.Administration.Commands
 
             var title = list ?? "Self Roles";
             embed.AddField($"**{title}**", sb.ToString());
+            embed.WithFooter("Click a reaction below to receive a role. Remove your reaction to remove the role.");
             var message = await ReplyAsync(string.Empty, embed.Build());
 
             foreach (var em in rm.SelfRoles.Keys)
@@ -259,15 +258,16 @@ namespace Reimu.Administration.Commands
                 embed.WithImageUrl("https://vic485.xyz/images/404.png");
             }
 
+            embed.WithFooter("Click a reaction below to receive a role. Remove your reaction to remove the role.");
             await message.ModifyAsync(x => x.Embed = embed.Build());
-            
+
             // Get the difference between the message reactions and the final reactions
             var toDelete = new List<IEmote>(message.Reactions.Keys.Except(reactions));
             foreach (var emote in toDelete)
             {
                 await DiscordApiHelper.DeleteAllReactionsWithEmote(message, emote);
             }
-            
+
             // Get the difference between the final reactions and the message reactions
             var toAdd = new List<IEmote>(reactions.Except(message.Reactions.Keys));
             await message.AddReactionsAsync(toAdd.ToArray());
