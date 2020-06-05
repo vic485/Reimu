@@ -42,7 +42,7 @@ namespace Reimu
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
                     //ShardId = _settings.Shard,
-                    TotalShards = _settings.TotalShards,
+                    //TotalShards = _settings.TotalShards,
                     MessageCacheSize = 20,
                     AlwaysDownloadUsers = true,
                     LogLevel = LogSeverity.Error
