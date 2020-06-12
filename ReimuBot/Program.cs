@@ -18,7 +18,7 @@ namespace Reimu
 {
     internal static class Program
     {
-        private const string Version = "0.0.1";
+        public const string Version = "0.1.0";
         private static LocalSettings _settings;
 
         private static async Task Main(string[] args)

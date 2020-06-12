@@ -26,12 +26,28 @@ namespace Reimu.Administration.Commands
             Context.GuildConfig.Moderation.AuditChannel = channel.Id;
             return ReplyAsync($"Audit channel set to {channel.Mention}.", updateGuild: true);
         }
+
+        [Command("dmjoin"), RequireUserPermission(GuildPermission.ManageChannels)]
+        public Task SetJoinDm()
+        {
+            Context.GuildConfig.JoinSettings.SendToDm = !Context.GuildConfig.JoinSettings.SendToDm;
+            var value = Context.GuildConfig.JoinSettings.SendToDm ? "enabled" : "disabled";
+            return ReplyAsync($"Sending join messages to user's DMs has been {value}", updateGuild: true);
+        }
+        
+        [Command("dmleave"), RequireUserPermission(GuildPermission.ManageChannels)]
+        public Task SetLeaveDm()
+        {
+            Context.GuildConfig.LeaveSettings.SendToDm = !Context.GuildConfig.LeaveSettings.SendToDm;
+            var value = Context.GuildConfig.LeaveSettings.SendToDm ? "enabled" : "disabled";
+            return ReplyAsync($"Sending leave messages to user's DMs has been {value}", updateGuild: true);
+        }
         
         [Command("joinmessage add"), Alias("jm add", "joinmessage a", "jm a"),
          RequireUserPermission(GuildPermission.ManageChannels)]
         public Task AddJoinMessage([Remainder] string message)
         {
-            return ReplyAsync(!Context.GuildConfig.JoinMessages.TryAdd(message)
+            return ReplyAsync(!Context.GuildConfig.JoinSettings.Messages.TryAdd(message)
                 ? "You are limited to five (5) join messages."
                 : "Join message added.", updateGuild: true);
         }
@@ -40,7 +56,7 @@ namespace Reimu.Administration.Commands
          RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task RemoveJoinMessage()
         {
-            if (Context.GuildConfig.JoinMessages.Count == 0)
+            if (Context.GuildConfig.JoinSettings.Messages.Count == 0)
             {
                 await ReplyAsync("Guild has no join messages.");
                 return;
@@ -48,7 +64,7 @@ namespace Reimu.Administration.Commands
 
             var menu = CreateEmbed(EmbedColor.Red)
                 .WithAuthor($"Remove Join Message")
-                .WithDescription(BuildMenu(Context.GuildConfig.JoinMessages))
+                .WithDescription(BuildMenu(Context.GuildConfig.JoinSettings.Messages))
                 .WithFooter("Type a **number** from the menu above to remove")
                 .Build();
 
@@ -62,13 +78,13 @@ namespace Reimu.Administration.Commands
                 return;
             }
 
-            if (result < 0 || result >= Context.GuildConfig.JoinMessages.Count)
+            if (result < 0 || result >= Context.GuildConfig.JoinSettings.Messages.Count)
             {
                 await ReplyAsync("Invalid input, type a number from the menu. e.g. \"0\"");
                 return;
             }
 
-            Context.GuildConfig.JoinMessages.RemoveAt(result);
+            Context.GuildConfig.JoinSettings.Messages.RemoveAt(result);
             await ReplyAsync("Join message removed.", updateGuild: true);
         }
 
@@ -77,11 +93,11 @@ namespace Reimu.Administration.Commands
         {
             if (channel == null)
             {
-                Context.GuildConfig.JoinChannel = 0;
+                Context.GuildConfig.JoinSettings.Channel = 0;
                 return ReplyAsync("Join channel removed.", updateGuild: true);
             }
 
-            Context.GuildConfig.JoinChannel = channel.Id;
+            Context.GuildConfig.JoinSettings.Channel = channel.Id;
             return ReplyAsync($"Join channel set to {channel.Mention}.", updateGuild: true);
         }
 
@@ -89,7 +105,7 @@ namespace Reimu.Administration.Commands
          RequireUserPermission(GuildPermission.ManageChannels)]
         public Task AddLeaveMessage([Remainder] string message)
         {
-            return ReplyAsync(!Context.GuildConfig.LeaveMessages.TryAdd(message)
+            return ReplyAsync(!Context.GuildConfig.LeaveSettings.Messages.TryAdd(message)
                 ? "You are limited to five (5) leave messages."
                 : "Leave message added.", updateGuild: true);
         }
@@ -98,7 +114,7 @@ namespace Reimu.Administration.Commands
          RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task RemoveLeaveMessage()
         {
-            if (Context.GuildConfig.LeaveMessages.Count == 0)
+            if (Context.GuildConfig.LeaveSettings.Messages.Count == 0)
             {
                 await ReplyAsync("Guild has no leave messages.");
                 return;
@@ -106,7 +122,7 @@ namespace Reimu.Administration.Commands
 
             var menu = CreateEmbed(EmbedColor.Red)
                 .WithAuthor($"Remove Leave Message")
-                .WithDescription(BuildMenu(Context.GuildConfig.LeaveMessages))
+                .WithDescription(BuildMenu(Context.GuildConfig.LeaveSettings.Messages))
                 .WithFooter("Type a **number** from the menu above to remove")
                 .Build();
 
@@ -120,13 +136,13 @@ namespace Reimu.Administration.Commands
                 return;
             }
 
-            if (result < 0 || result >= Context.GuildConfig.JoinMessages.Count)
+            if (result < 0 || result >= Context.GuildConfig.LeaveSettings.Messages.Count)
             {
                 await ReplyAsync("Invalid input, type a number from the menu. e.g. \"0\"");
                 return;
             }
 
-            Context.GuildConfig.JoinMessages.RemoveAt(result);
+            Context.GuildConfig.LeaveSettings.Messages.RemoveAt(result);
             await ReplyAsync("Leave message removed.", updateGuild: true);
         }
 
@@ -135,11 +151,11 @@ namespace Reimu.Administration.Commands
         {
             if (channel == null)
             {
-                Context.GuildConfig.LeaveChannel = 0;
+                Context.GuildConfig.LeaveSettings.Channel = 0;
                 return ReplyAsync("Leave channel removed.", updateGuild: true);
             }
 
-            Context.GuildConfig.LeaveChannel = channel.Id;
+            Context.GuildConfig.LeaveSettings.Channel = channel.Id;
             return ReplyAsync($"Leave channel set to {channel.Mention}.", updateGuild: true);
         }
 

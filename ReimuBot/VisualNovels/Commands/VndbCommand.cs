@@ -13,6 +13,13 @@ namespace Reimu.VisualNovels.Commands
     [Name("Visual Novels"), Group("vndb")]
     public class VndbCommand : ReimuBase
     {
+        [Command]
+        public Task TempCommandInfo()
+        {
+            return ReplyAsync(
+                "**Visual Novel Database Search**\nThis command is currently in a very early state.\nImplemented functions: `r!vndb character <character name>`");
+        }
+        
         [Command("character"), Alias("char", "c"), RequireCoolDown(15)]
         public async Task SearchCharacterAsync(params string[] nameArray)
         {

@@ -399,7 +399,7 @@ namespace Reimu.Core
             var rm = FindRoleMenu(config, reaction.Channel.Id, message.Id);
             if (rm == null)
                 return;
-            
+
             var final = reaction.Emote.ToString();
             // Animated emotes come in without the 'a' prefix for some reason
             if (!rm.SelfRoles.ContainsKey(final))
@@ -425,13 +425,26 @@ namespace Reimu.Core
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
+            if (user.IsBot)
+                return;
+
             var config = _database.Get<GuildConfig>($"guild-{user.Guild.Id}");
-            var channel = user.Guild.GetTextChannel(config.JoinChannel);
-            if (!(channel == null || config.JoinMessages.Count == 0))
+            if (config.JoinSettings.Messages.Count != 0)
             {
-                var message = config.JoinMessages[Rand.Range(0, config.JoinMessages.Count)]
-                    .Replace("{user}", user.Mention).Replace("{guild}", $"**{user.Guild.Name}**");
-                await channel.SendMessageAsync(message);
+                if (config.JoinSettings.SendToDm)
+                {
+                    var channel = await user.GetOrCreateDMChannelAsync();
+                    var message = config.JoinSettings.Messages[Rand.Range(0, config.JoinSettings.Messages.Count)]
+                        .Replace("{user}", user.Mention).Replace("{guild}", $"**{user.Guild.Name}**");
+                    await channel.SendMessageAsync(message);
+                }
+                else
+                {
+                    var channel = user.Guild.GetTextChannel(config.JoinSettings.Channel);
+                    var message = config.JoinSettings.Messages[Rand.Range(0, config.JoinSettings.Messages.Count)]
+                        .Replace("{user}", user.Mention).Replace("{guild}", $"**{user.Guild.Name}**");
+                    await channel.SendMessageAsync(message);
+                }
             }
             // TODO: Join role
 
@@ -445,14 +458,27 @@ namespace Reimu.Core
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
-            var config = _database.Get<GuildConfig>($"guild-{user.Guild.Id}");
-            var channel = user.Guild.GetTextChannel(config.LeaveChannel);
-            if (channel == null || config.LeaveMessages.Count == 0)
+            if (user.IsBot)
                 return;
 
-            var message = config.LeaveMessages[Rand.Range(0, config.LeaveMessages.Count)]
-                .Replace("{user}", user.Nickname ?? user.Username);
-            await channel.SendMessageAsync(message);
+            var config = _database.Get<GuildConfig>($"guild-{user.Guild.Id}");
+            if (config.LeaveSettings.Messages.Count == 0)
+                return;
+
+            if (config.LeaveSettings.SendToDm)
+            {
+                var channel = await user.GetOrCreateDMChannelAsync();
+                var message = config.LeaveSettings.Messages[Rand.Range(0, config.LeaveSettings.Messages.Count)]
+                    .Replace("{user}", user.Nickname ?? user.Username).Replace("{guild}", $"**{user.Guild.Name}**");
+                await channel.SendMessageAsync(message);
+            }
+            else
+            {
+                var channel = user.Guild.GetTextChannel(config.LeaveSettings.Channel);
+                var message = config.LeaveSettings.Messages[Rand.Range(0, config.LeaveSettings.Messages.Count)]
+                    .Replace("{user}", user.Nickname ?? user.Username).Replace("{guild}", $"**{user.Guild.Name}**");
+                await channel.SendMessageAsync(message);
+            }
         }
 
         #endregion

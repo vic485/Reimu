@@ -31,16 +31,26 @@ namespace Reimu.Database.Models
         /// <summary>
         /// Id of channel to send user join messages to
         /// </summary>
-        public ulong JoinChannel { get; set; }
+        //public ulong JoinChannel { get; set; }
 
-        public List<string> JoinMessages { get; set; } = new List<string>(5);
+        //public List<string> JoinMessages { get; set; } = new List<string>(5);
+
+        /// <summary>
+        /// Settings for when a user joins the guild
+        /// </summary>
+        public UserJoinLeaveSettings JoinSettings { get; set; } = new UserJoinLeaveSettings();
 
         /// <summary>
         /// Id of channel to send user leave messages to
         /// </summary>
-        public ulong LeaveChannel { get; set; }
+        //public ulong LeaveChannel { get; set; }
 
-        public List<string> LeaveMessages { get; set; } = new List<string>(5);
+        //public List<string> LeaveMessages { get; set; } = new List<string>(5);
+
+        /// <summary>
+        /// Settings for when a user leaves the guild
+        /// </summary>
+        public UserJoinLeaveSettings LeaveSettings { get; set; } = new UserJoinLeaveSettings();
 
         public GuildXpSettings XpSettings { get; set; } = new GuildXpSettings();
 
