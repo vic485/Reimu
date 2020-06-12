@@ -4,6 +4,8 @@
 
 ```
 set auditchannel #audit-logs                   -- leave bland to remove
+set dmjoin                                     -- toggles true/false
+set dmleave                                    -- toggles true/false
 set joinmessage add Welcome {user} to {guild}!
 set joinmessage remove
 set joinchannel #welcome                       -- leave blank to remove

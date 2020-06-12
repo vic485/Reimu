@@ -11,9 +11,10 @@
 - General
 
   - [Avatar](avatar.md)
-  - [Choose](choose.md)
   - BotInfo
+  - [Choose](choose.md)
   - Help
+  - IsItWednesdayYet
   - Ping
   - [Scoreboard](scoreboard.md)
   - Shards
@@ -24,6 +25,7 @@
   - Kick
   - Mute
   - Reason
+  - ResetWarnings
   - UnMute
   - Warn
 
