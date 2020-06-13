@@ -7,6 +7,7 @@ namespace Reimu.Database.Models.Parts
         public ulong AuditChannel { get; set; }
         public ulong LogChannel { get; set; }
         public ulong MuteRole { get; set; }
+        public int MaxMentions { get; set; }
         public int MaxWarnings { get; set; }
         public bool InviteBlock { get; set; }
         public List<string> WordBlacklist { get; set; } = new List<string>();

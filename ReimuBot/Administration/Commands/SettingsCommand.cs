@@ -34,7 +34,7 @@ namespace Reimu.Administration.Commands
             var value = Context.GuildConfig.JoinSettings.SendToDm ? "enabled" : "disabled";
             return ReplyAsync($"Sending join messages to user's DMs has been {value}", updateGuild: true);
         }
-        
+
         [Command("dmleave"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetLeaveDm()
         {
@@ -42,7 +42,15 @@ namespace Reimu.Administration.Commands
             var value = Context.GuildConfig.LeaveSettings.SendToDm ? "enabled" : "disabled";
             return ReplyAsync($"Sending leave messages to user's DMs has been {value}", updateGuild: true);
         }
-        
+
+        [Command("inviteblock"), RequireUserPermission(GuildPermission.ManageChannels)]
+        public Task SetInviteBlock()
+        {
+            Context.GuildConfig.Moderation.InviteBlock = !Context.GuildConfig.Moderation.InviteBlock;
+            var value = Context.GuildConfig.Moderation.InviteBlock ? "enabled" : "disabled";
+            return ReplyAsync($"Blocking of discord invite links has been {value}", updateGuild: true);
+        }
+
         [Command("joinmessage add"), Alias("jm add", "joinmessage a", "jm a"),
          RequireUserPermission(GuildPermission.ManageChannels)]
         public Task AddJoinMessage([Remainder] string message)
@@ -175,6 +183,21 @@ namespace Reimu.Administration.Commands
             }
         }
 
+        [Command("maxmentions"), RequireUserPermission(GuildPermission.KickMembers)]
+        public Task SetMaxMentions(int mentions = 0)
+        {
+            if (mentions <= 0)
+            {
+                Context.GuildConfig.Moderation.MaxMentions = 0;
+                return ReplyAsync($"Deleting messages for too many mentions disabled.", updateGuild: true);
+            }
+            else
+            {
+                Context.GuildConfig.Moderation.MaxMentions = mentions;
+                return ReplyAsync($"Will delete messages with more than {mentions} mentions.", updateGuild: true);
+            }
+        }
+
         [Command("modchannel"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetModChannel(SocketTextChannel channel = null)
         {
@@ -233,10 +256,10 @@ namespace Reimu.Administration.Commands
             {
                 if (Context.GuildConfig.Moderation.WordBlacklist.Contains(word))
                     continue;
-                
+
                 Context.GuildConfig.Moderation.WordBlacklist.Add(word);
             }
-            
+
             return ReplyAsync("Word(s) added to blacklist.", updateGuild: true);
         }
 
@@ -254,7 +277,7 @@ namespace Reimu.Administration.Commands
                 .WithDescription(BuildMenu(Context.GuildConfig.Moderation.WordBlacklist))
                 .WithFooter("Type a **number** from the above menu to remove.")
                 .Build();
-            
+
             var message = await ReplyWaitAsync(string.Empty, menu, timeOut: TimeSpan.FromSeconds(15));
             if (!message.Item1)
                 return;

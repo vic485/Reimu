@@ -242,6 +242,9 @@ namespace Reimu.Core
                     return;
             }
 
+            if (await AutoModerator.CheckMentions(context))
+                return;
+
             if (await AutoModerator.CheckForBlacklistedWord(context))
                 return;
 
@@ -332,6 +335,12 @@ namespace Reimu.Core
                 if (await AutoModerator.CheckForInvite(userMessage, context.User as SocketGuildUser))
                     return;
             }
+
+            if (await AutoModerator.CheckMentions(context))
+                return;
+
+            if (await AutoModerator.CheckForBlacklistedWord(context))
+                return;
         }
 
         private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, ISocketMessageChannel channel,

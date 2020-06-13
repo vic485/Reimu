@@ -12,6 +12,7 @@
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
         <AssemblyName>Reimu</AssemblyName>
         <PlatformTarget>x64</PlatformTarget>
         <DebugType>pdbonly</DebugType>

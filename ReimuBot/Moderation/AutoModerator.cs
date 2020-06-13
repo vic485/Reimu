@@ -28,13 +28,56 @@ namespace Reimu.Moderation
         public static async Task<bool> CheckForBlacklistedWord(BotContext context)
         {
             if ((context.User as SocketGuildUser).GuildPermissions.Has(GuildPermission.ManageMessages) ||
-                !context.GuildConfig.Moderation.WordBlacklist.Any(x => context.Message.Content.ToLower().Contains(x.ToLower())))
+                !context.GuildConfig.Moderation.WordBlacklist.Any(x =>
+                    context.Message.Content.ToLower().Contains(x.ToLower())))
             {
                 return false;
             }
 
             await context.Message.DeleteAsync();
             await context.Channel.SendMessageAsync($"Your message was deleted as it contains a blacklisted word.");
+            return true;
+        }
+
+        public static async Task<bool> CheckMentions(BotContext context)
+        {
+            var user = context.User as SocketGuildUser;
+
+            if (user.GuildPermissions.Has(GuildPermission.ManageMessages) || context.Message.MentionedUsers.Count <=
+                context.GuildConfig.Moderation.MaxMentions &&
+                context.Message.MentionedRoles.Count <= context.GuildConfig.Moderation.MaxMentions)
+                return false;
+
+            await context.Message.DeleteAsync();
+
+            var profile = context.GuildConfig.UserProfiles.GetProfile(user.Id);
+            profile.Warnings++;
+            context.GuildConfig.UserProfiles[user.Id] = profile;
+
+            if (context.GuildConfig.Moderation.MaxWarnings > 0 &&
+                profile.Warnings >= context.GuildConfig.Moderation.MaxWarnings)
+            {
+                await (await context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                    $"**[Kicked from {context.Guild.Name}]**\n" +
+                    $"Reason: Too many mentions in message.");
+                await user.KickAsync("Too many mentions in message.");
+                // TODO: Log system needs another method or adjustments to work with automoderator
+                //await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
+                await context.Channel.SendMessageAsync(
+                    $"{user.Nickname ?? user.Username} maxed out warnings and was kicked.");
+            }
+            else
+            {
+                await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                    $"**[Warned in {context.Guild.Name}]**\n" +
+                    $"Reason: Too many mentions in message.");
+                //await ModerationHelper.LogAsync(Context, user, CaseType.Warning, reason);
+                // TODO: No warning for first infraction?
+                await context.Channel.SendMessageAsync(
+                    $"Your message was deleted as it contains too many user/role mentions.");
+            }
+
+            context.Database.Save(context.GuildConfig);
             return true;
         }
     }
