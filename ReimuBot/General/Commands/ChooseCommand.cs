@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord.Commands;
 using Reimu.Core;
 
@@ -16,7 +17,7 @@ namespace Reimu.General.Commands
             }
 
             var choice = choices[Rand.Range(0, choices.Length)];
-            return ReplyAsync($"Hmmmm, I choose {choice}.");
+            return ReplyAsync($"Hmmmm, I choose `{choice}`.");
         }
     }
 }

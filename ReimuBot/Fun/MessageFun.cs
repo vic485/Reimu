@@ -10,6 +10,13 @@ namespace Reimu.Fun
     {
         public static async Task<bool> RepeatText(BotContext context)
         {
+            if (!PercentChance(20))
+                return false;
+
+            // Don't promote ping spam
+            if (context.Message.MentionedUsers.Any() || context.Message.MentionedRoles.Any())
+                return false;
+
             var reply = context.Message.Content.ToLower();
             var otherMessages = (await context.Channel.GetMessagesAsync(3).FlattenAsync()).ToList();
 
@@ -18,7 +25,7 @@ namespace Reimu.Fun
 
             // Check message contents
             if (otherMessages.Any(message => message.Content.ToLower() != reply) ||
-                otherMessages.Any(x => string.IsNullOrWhiteSpace(x.Content)))
+                otherMessages.Any(x => x.Author.IsBot))
             {
                 return false;
             }
@@ -30,15 +37,6 @@ namespace Reimu.Fun
             {
                 return false;
             }
-
-            // Don't react if bot is in the messages
-            if (otherMessages.Any(x => x.Author.Id == context.Client.CurrentUser.Id))
-            {
-                return false;
-            }
-
-            if (!PercentChance(20))
-                return false;
 
             await context.Channel.SendMessageAsync(context.Message.Content);
             return true;

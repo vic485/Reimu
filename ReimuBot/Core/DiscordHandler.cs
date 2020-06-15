@@ -20,6 +20,8 @@ namespace Reimu.Core
         private readonly CommandService _commandService;
         private readonly DatabaseHandler _database;
 
+        private readonly string[] _blockedContent = {"@everyone", "@here"};
+
         private IServiceProvider _serviceProvider;
 
         public DiscordHandler(DiscordShardedClient client, CommandService commandService,
@@ -227,6 +229,11 @@ namespace Reimu.Core
 
         private async Task MessageReceivedAsync(SocketMessage socketMessage)
         {
+            // I can't think of a reason we would want to do anything with a message mentioning here or everyone,
+            // so we will toss those out to be safe from the bot accidentally mentioning these
+            if (_blockedContent.Any(socketMessage.Content.Contains))
+                return;
+
             if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
                 return;
 
