@@ -14,7 +14,7 @@ namespace Reimu.General.Commands
             var today = DateTime.UtcNow;
             return ReplyAsync(today.DayOfWeek == DayOfWeek.Wednesday
                 ? "Yes, it is Wednesday!"
-                : $"No, it is only {today.DayOfWeek}.");
+                : $"No :( it is only {today.DayOfWeek}...");
         }
     }
 }

@@ -6,7 +6,6 @@ using Reimu.Database.Models;
 
 namespace Reimu.Database
 {
-    // TODO: Add support for embedded database when RavenDB.Embedded is updated to .Net 5
     public class DatabaseHandler
     {
         private readonly IDocumentStore _store;
