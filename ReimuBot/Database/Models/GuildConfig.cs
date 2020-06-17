@@ -19,6 +19,11 @@ namespace Reimu.Database.Models
         public ulong JoinRole { get; set; }
 
         /// <summary>
+        /// Percent chance of replies to messages
+        /// </summary>
+        public int FunnyBusiness { get; set; } = 20;
+
+        /// <summary>
         /// Id of role given when users pass a gateway (e.g. accepting rules)
         /// </summary>
         public ulong VerificationRole { get; set; }

@@ -43,6 +43,14 @@ namespace Reimu.Administration.Commands
             return ReplyAsync($"Sending leave messages to user's DMs has been {value}", updateGuild: true);
         }
 
+        [Command("funny"), RequireUserPermission(GuildPermission.ManageMessages)]
+        public Task SetFunnyBusiness(int percent)
+        {
+            percent = Math.Max(0, Math.Min(percent, 100));
+            Context.GuildConfig.FunnyBusiness = percent;
+            return ReplyAsync($"The chance of me being funny has been set to {percent}%.", updateGuild: true);
+        }
+
         [Command("inviteblock"), RequireUserPermission(GuildPermission.ManageChannels)]
         public Task SetInviteBlock()
         {

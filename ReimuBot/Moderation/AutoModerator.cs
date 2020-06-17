@@ -43,6 +43,9 @@ namespace Reimu.Moderation
         {
             var user = context.User as SocketGuildUser;
 
+            if (context.GuildConfig.Moderation.MaxMentions <= 0)
+                return false;
+
             if (user.GuildPermissions.Has(GuildPermission.ManageMessages) || context.Message.MentionedUsers.Count <=
                 context.GuildConfig.Moderation.MaxMentions &&
                 context.Message.MentionedRoles.Count <= context.GuildConfig.Moderation.MaxMentions)

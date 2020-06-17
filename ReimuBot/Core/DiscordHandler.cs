@@ -255,7 +255,7 @@ namespace Reimu.Core
             if (await AutoModerator.CheckForBlacklistedWord(context))
                 return;
 
-            await MessageFun.RepeatText(context);
+            await MessageFun.Process(context);
 
             // Global xp
             if ((DateTime.UtcNow - context.UserData.LastMessage).TotalMinutes >= 2)

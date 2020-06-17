@@ -29,13 +29,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ReimuBot.Common\ReimuBot.Common.csproj" />
-      <ProjectReference Include="..\VndbSharp\VndbSharp.csproj" />
       <ProjectReference Include="..\VndbSharp\VndbSharp\VndbSharp.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net" Version="2.3.0-dev-20200507.9" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20215.2" />
+      <PackageReference Include="Discord.Net" Version="2.3.0-dev-20200616.2" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.5.20278.1" />
       <PackageReference Include="Nekos.Net" Version="1.0.2" />
       <PackageReference Include="RavenDB.Client" Version="4.2.102" />
     </ItemGroup>

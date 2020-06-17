@@ -8,7 +8,31 @@ namespace Reimu.Fun
 {
     public static class MessageFun
     {
-        public static async Task<bool> RepeatText(BotContext context)
+        public static async Task Process(BotContext context)
+        {
+            if (!PercentChance(context.GuildConfig.FunnyBusiness))
+                return;
+
+            if (await Replies(context))
+                return;
+
+            await RepeatText(context);
+        }
+
+        private static async Task<bool> Replies(BotContext context)
+        {
+            var message = context.Message.Content.ToLower();
+            switch (message)
+            {
+                case "lmao":
+                    await context.Channel.SendMessageAsync("big草");
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        
+        private static async Task<bool> RepeatText(BotContext context)
         {
             if (!PercentChance(20))
                 return false;
