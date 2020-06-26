@@ -35,7 +35,7 @@ namespace Reimu.Moderation.Commands
             await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(
                 $"**[Kicked from {Context.Guild.Name}]**\n" +
                 $"Reason: {reason ?? "No reason provided."}");
-            await user.KickAsync(reason);
+            await user.KickAsync(/*reason*/);
             await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
             await ReplyAsync($"{user.Nickname ?? user.Username} was kicked.");
         }

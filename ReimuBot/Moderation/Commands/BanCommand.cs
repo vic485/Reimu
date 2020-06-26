@@ -32,10 +32,11 @@ namespace Reimu.Moderation.Commands
                 return;
             }
 
+            var banReason = reason?.Length > 512 ? reason.Substring(0, 512) : reason;
             await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(
                 $"**[Banned from {Context.Guild.Name}]**\n" +
                 $"Reason: {reason ?? "No reason provided."}");
-            await user.BanAsync(1, reason);
+            await user.BanAsync(1, banReason);
             await ModerationHelper.LogAsync(Context, user, CaseType.Ban, reason);
             await ReplyAsync($"{user.Nickname ?? user.Username} was banned.");
         }
