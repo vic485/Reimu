@@ -24,6 +24,7 @@
   - Ban
   - Kick
   - Mute
+  - [Purge](purge.md)
   - Reason
   - ResetWarnings
   - UnMute
