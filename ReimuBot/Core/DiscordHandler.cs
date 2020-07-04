@@ -229,11 +229,6 @@ namespace Reimu.Core
 
         private async Task MessageReceivedAsync(SocketMessage socketMessage)
         {
-            // I can't think of a reason we would want to do anything with a message mentioning here or everyone,
-            // so we will toss those out to be safe from the bot accidentally mentioning these
-            if (_blockedContent.Any(socketMessage.Content.Contains))
-                return;
-
             if (!(socketMessage is SocketUserMessage userMessage) || socketMessage.Author.IsBot)
                 return;
 
@@ -253,6 +248,12 @@ namespace Reimu.Core
                 return;
 
             if (await AutoModerator.CheckForBlacklistedWord(context))
+                return;
+            
+            // Do this after automod actually
+            // I can't think of a reason we would want to do anything with a message mentioning here or everyone,
+            // so we will toss those out to be safe from the bot accidentally mentioning these
+            if (_blockedContent.Any(socketMessage.Content.Contains))
                 return;
 
             await MessageFun.Process(context);
@@ -278,6 +279,7 @@ namespace Reimu.Core
                 guildProfile.LastMessage = DateTime.UtcNow;
                 context.GuildConfig.UserProfiles[context.User.Id] = guildProfile;
                 _database.Save(context.GuildConfig);
+                await LevelUpCheck(context);
             }
 
             var argPos = 0;
@@ -520,6 +522,31 @@ namespace Reimu.Core
             }
 
             return null;
+        }
+
+        private async Task LevelUpCheck(BotContext context)
+        {
+            if (context.GuildConfig.Levels.Count == 0)
+                return;
+
+            var user = context.User as SocketGuildUser;
+
+            // Find the level below our current xp
+            var levelKeys = context.GuildConfig.Levels.Keys.ToList(); // TODO: Is this sorted ascending?
+            var xpBelow = 0;
+            foreach (var xp in levelKeys)
+            {
+                if (xp < context.GuildConfig.UserProfiles.GetProfile(context.User.Id).Xp)
+                    xpBelow = xp;
+            }
+
+            var role = context.Guild.GetRole(context.GuildConfig.Levels[xpBelow]);
+            // Level up only if we don't have the role already
+            if (!user.Roles.Contains(role))
+            {
+                await user.AddRoleAsync(role);
+                await context.Channel.SendMessageAsync($"{user.Mention} has leveled up to `{role.Name}`!");
+            }
         }
     }
 }

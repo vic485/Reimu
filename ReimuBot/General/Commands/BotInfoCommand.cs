@@ -17,7 +17,7 @@ namespace Reimu.General.Commands
         public Task ShowBotInfo()
         {
             var botProcess = Process.GetCurrentProcess();
-            var upTime = botProcess.TotalProcessorTime;
+            var upTime = DateTime.Now - botProcess.StartTime;
             var guildNum = Context.Client.GetShardIdFor(Context.Guild) + 1;
             var embed = CreateEmbed(EmbedColor.Red)
                 .WithAuthor("Reimu | 博麗 霊夢", Context.Client.CurrentUser.GetAvatarUrl(), "https://vic485.xyz/Reimu")

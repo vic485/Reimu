@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Reimu.Core;
+using ReimuBot.Translation;
 
 namespace Reimu.General.Commands
 {
@@ -13,8 +14,8 @@ namespace Reimu.General.Commands
         {
             var today = DateTime.UtcNow;
             return ReplyAsync(today.DayOfWeek == DayOfWeek.Wednesday
-                ? "Yes, it is Wednesday!"
-                : $"No :( it is only {today.DayOfWeek}...");
+                ? Translator.GetString(Context.GuildConfig.Locale, "WednesdayCommand", "wednesday")
+                : Translator.GetString(Context.GuildConfig.Locale, "WednesdayCommand", today.DayOfWeek.ToString().ToLower()));
         }
     }
 }

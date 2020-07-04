@@ -14,6 +14,11 @@ namespace Reimu.Database.Models
         public string Prefix { get; set; }
 
         /// <summary>
+        /// What language files to use when responding in the guild
+        /// </summary>
+        public string Locale { get; set; } = "en-us";
+
+        /// <summary>
         /// Id of role given to users on join
         /// </summary>
         public ulong JoinRole { get; set; }
@@ -56,6 +61,12 @@ namespace Reimu.Database.Models
         /// Settings for when a user leaves the guild
         /// </summary>
         public UserJoinLeaveSettings LeaveSettings { get; set; } = new UserJoinLeaveSettings();
+        
+        /// <summary>
+        /// Guild's leveled roles from guild xp
+        /// Key: Required xp, Value: Role id
+        /// </summary>
+        public Dictionary<int, ulong> Levels { get; set; } = new Dictionary<int, ulong>();
 
         public GuildXpSettings XpSettings { get; set; } = new GuildXpSettings();
 

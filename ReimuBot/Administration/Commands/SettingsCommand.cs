@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Reimu.Common.Logging;
 using Reimu.Core;
 
 namespace Reimu.Administration.Commands
@@ -175,6 +173,26 @@ namespace Reimu.Administration.Commands
             return ReplyAsync($"Leave channel set to {channel.Mention}.", updateGuild: true);
         }
 
+        // TODO: It would likely be better to check against an enum or something from the System.Globalization namespace instead of a lengthy string switch
+        [Command("locale"), RequireUserPermission(GuildPermission.ManageGuild)]
+        public Task SetLocale(string locale)
+        {
+            locale = locale.ToLower();
+            switch (locale)
+            {
+                case "en-us":
+                    Context.GuildConfig.Locale = locale;
+                    break;
+                case "ja-jp":
+                    Context.GuildConfig.Locale = locale;
+                    break;
+                default:
+                    return ReplyAsync($"{locale} is not a locale I recognize.");
+            }
+
+            return ReplyAsync($"Locale set to {locale}.", updateGuild: true);
+        }
+
         [Command("maxwarns"), RequireUserPermission(GuildPermission.KickMembers)]
         public Task SetMaxWarns(int warnings = 0)
         {
@@ -231,6 +249,49 @@ namespace Reimu.Administration.Commands
 
             Context.GuildConfig.Moderation.MuteRole = role.Id;
             return ReplyAsync($"Mute role set to `{role.Name}`.", updateGuild: true);
+        }
+
+        [Command("rank add"), RequireUserPermission(ChannelPermission.ManageRoles)]
+        public Task AddLeveledRole(int xp, SocketRole role)
+        {
+            if (Context.GuildConfig.Levels.Count >= 10)
+            {
+                return ReplyAsync("You have reached the max of 10 leveled roles. Please remove one to add more.");
+            }
+            
+            Context.GuildConfig.Levels.Add(xp, role.Id);
+            return ReplyAsync($"Role `{role.Name}` will be given at {xp} XP.", updateGuild: true);
+        }
+
+        [Command("rank list"), RequireUserPermission(ChannelPermission.ManageRoles)]
+        public Task ListLeveledRoles()
+        {
+            if (Context.GuildConfig.Levels.Count == 0)
+                return ReplyAsync("No leveled roles have been added.");
+
+            var ranks = "";
+            foreach (var (key, value) in Context.GuildConfig.Levels.OrderBy(x => x.Key))
+            {
+                var role = Context.Guild.GetRole(value);
+                ranks += $"{role.Mention} - **{key} XP**";
+            }
+
+            var embed = CreateEmbed(EmbedColor.Purple)
+                .WithTitle($"{Context.Guild.Name} Leveled Roles")
+                .WithDescription(ranks)
+                .Build();
+
+            return ReplyAsync(string.Empty, embed);
+        }
+
+        [Command("rank remove"), RequireUserPermission(ChannelPermission.ManageRoles)]
+        public Task RemoveLeveledRole(int xp)
+        {
+            if (!Context.GuildConfig.Levels.ContainsKey(xp))
+                return ReplyAsync("No level was found for that XP amount.");
+
+            Context.GuildConfig.Levels.Remove(xp);
+            return ReplyAsync($"Level for {xp} XP has been removed.", updateGuild: true);
         }
 
         [Command("verifymessage"), RequireUserPermission(GuildPermission.ManageMessages)]
