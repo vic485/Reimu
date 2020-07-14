@@ -42,5 +42,9 @@ namespace Reimu.Moderation.Commands
                 await ReplyAsync($"{user.Nickname ?? user.Username} was warned.");
             }
         }
+
+        [Command("warn"), RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task WarnUserAsync(ulong id, [Remainder] string reason = null)
+            => await WarnUserAsync(await ModerationHelper.ResolveUser(Context.Guild, id), reason);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
 using Reimu.Core;
 using Reimu.Database.Models.Parts;
 
@@ -63,6 +64,18 @@ namespace Reimu.Moderation
                 .Build();
 
             await message.ModifyAsync(x => x.Embed = newEmbed);
+        }
+
+        /// <summary>
+        /// Force downloading of guild users and get a SocketGuildUser by id.
+        /// </summary>
+        /// <param name="guild">The guild to act on</param>
+        /// <param name="userId">User id to search for</param>
+        /// <returns>SocketGuildUser with the provided id, or null if not found.</returns>
+        public static async Task<SocketGuildUser> ResolveUser(SocketGuild guild, ulong userId)
+        {
+            await guild.DownloadUsersAsync();
+            return guild.GetUser(userId);
         }
 
         private static EmbedColor CaseColor(CaseType caseType)

@@ -40,5 +40,11 @@ namespace Reimu.Moderation.Commands
             await ModerationHelper.LogAsync(Context, user, CaseType.Ban, reason);
             await ReplyAsync($"{user.Nickname ?? user.Username} was banned.");
         }
+
+        // TODO: We may also want to ban users not in our server by id
+        [Command("ban"), RequireBotPermission(GuildPermission.BanMembers),
+         RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task BanUserAsync(ulong id, [Remainder] string reason = null)
+            => await BanUserAsync(await ModerationHelper.ResolveUser(Context.Guild, id), reason);
     }
 }

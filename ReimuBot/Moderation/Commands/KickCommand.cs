@@ -39,5 +39,10 @@ namespace Reimu.Moderation.Commands
             await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
             await ReplyAsync($"{user.Nickname ?? user.Username} was kicked.");
         }
+
+        [Command("kick"), RequireBotPermission(GuildPermission.KickMembers),
+         RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task KickUserAsync(ulong id, [Remainder] string reason = null)
+            => await KickUserAsync(await ModerationHelper.ResolveUser(Context.Guild, id), reason);
     }
 }
