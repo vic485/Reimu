@@ -89,17 +89,23 @@ namespace Reimu.Core
         #region Connections
 
         // Called when (re)connected to Discord
-        private static Task Connected(DiscordSocketClient client)
+        private Task Connected(DiscordSocketClient client)
         {
             Logger.LogInfo($"Shard {client.ShardId + 1} has connected.");
+            var status = _database.Get<BotStatus>("Status");
+            status.ShardStatus[client.ShardId] = "Connected";
+            _database.Save(status);
             return Task.CompletedTask;
         }
 
         // Called when disconnected from Discord
-        private static Task Disconnected(Exception error, DiscordSocketClient client)
+        private Task Disconnected(Exception error, DiscordSocketClient client)
         {
             // Treat this as only a warning since the reasons for a loss of connection can vary in severity
             Logger.LogWarning($"Shard {client.ShardId + 1} disconnected from Discord: {error.Message}");
+            var status = _database.Get<BotStatus>("Status");
+            status.ShardStatus[client.ShardId] = "Disconnected";
+            _database.Save(status);
             return Task.CompletedTask;
         }
 
@@ -109,6 +115,10 @@ namespace Reimu.Core
             Logger.LogInfo($"Shard {client.ShardId + 1} is ready.");
             await client.SetGameAsync(
                 $"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
+
+            var status = _database.Get<BotStatus>("Status");
+            status.ShardStatus[client.ShardId] = "Active";
+            _database.Save(status);
         }
 
         // TODO: Instead of latency use this for statuses/errors?
@@ -249,7 +259,7 @@ namespace Reimu.Core
 
             if (await AutoModerator.CheckForBlacklistedWord(context))
                 return;
-            
+
             // Do this after automod actually
             // I can't think of a reason we would want to do anything with a message mentioning here or everyone,
             // so we will toss those out to be safe from the bot accidentally mentioning these

@@ -21,21 +21,34 @@ namespace Reimu.Database
             if (session.Advanced.Exists("Config"))
             {
                 Logger.LogVerbose("Configuration exists in database.");
-                return;
+            }
+            else
+            {
+                Logger.LogVerbose("No configuration found in database, creating now.");
+                Logger.LogForce("Enter bot token: ");
+                var token = Console.ReadLine();
+                Logger.LogForce("Enter bot prefix: ");
+                var prefix = Console.ReadLine();
+
+                Save(new BotConfig
+                {
+                    Id = "Config",
+                    Token = token,
+                    Prefix = prefix
+                });
             }
 
-            Logger.LogVerbose("No configuration found in database, creating now.");
-            Logger.LogForce("Enter bot token: ");
-            var token = Console.ReadLine();
-            Logger.LogForce("Enter bot prefix: ");
-            var prefix = Console.ReadLine();
-
-            Save(new BotConfig
+            if (session.Advanced.Exists("Status"))
             {
-                Id = "Config",
-                Token = token,
-                Prefix = prefix
-            });
+                Logger.LogVerbose("Status data exists in database.");
+            }
+            else
+            {
+                Save(new BotStatus
+                {
+                    Id = "Status"
+                });
+            }
         }
 
         /// <summary>
