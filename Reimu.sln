@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VndbSharp", "VndbSharp\Vndb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReimuBot.Translation", "ReimuBot.Translation\ReimuBot.Translation.csproj", "{360B4F8E-C7A3-4903-B6A7-72531DE65787}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReimuBot.Dashboard", "ReimuBot.Dashboard\ReimuBot.Dashboard.csproj", "{6C047B70-D1DF-4831-9714-AA1F0CAB3733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{360B4F8E-C7A3-4903-B6A7-72531DE65787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{360B4F8E-C7A3-4903-B6A7-72531DE65787}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{360B4F8E-C7A3-4903-B6A7-72531DE65787}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C047B70-D1DF-4831-9714-AA1F0CAB3733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C047B70-D1DF-4831-9714-AA1F0CAB3733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C047B70-D1DF-4831-9714-AA1F0CAB3733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C047B70-D1DF-4831-9714-AA1F0CAB3733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
