@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Discord.WebSocket;
-using Reimu.Database.Models.Parts;
+using Reimu.Common.Data.Parts;
 
 namespace Reimu
 {

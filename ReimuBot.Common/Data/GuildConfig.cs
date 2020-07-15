@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Reimu.Database.Models.Parts;
+using Reimu.Common.Data.Parts;
 
-namespace Reimu.Database.Models
+namespace Reimu.Common.Data
 {
     /// <summary>
     /// Guild specific configuration

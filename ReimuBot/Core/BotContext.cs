@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Raven.Client.Documents.Session;
 using Reimu.Database;
-using Reimu.Database.Models;
+using Reimu.Common.Data;
 using VndbSharp;
 
 namespace Reimu.Core

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Reimu.Core;
-using Reimu.Database.Models;
+using Reimu.Common.Data;
 
 namespace Reimu.General.Commands
 {

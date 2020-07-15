@@ -1,4 +1,4 @@
-﻿namespace Reimu.Database.Models.Parts
+﻿namespace Reimu.Common.Data.Parts
 {
     public class ModCase
     {

@@ -2,7 +2,7 @@
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using Reimu.Common.Logging;
-using Reimu.Database.Models;
+using Reimu.Common.Data;
 
 namespace Reimu.Database
 {

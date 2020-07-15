@@ -7,8 +7,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Common.Logging;
 using Reimu.Database;
-using Reimu.Database.Models;
-using Reimu.Database.Models.Parts;
+using Reimu.Common.Data;
+using Reimu.Common.Data.Parts;
 using Reimu.Fun;
 using Reimu.Moderation;
 
