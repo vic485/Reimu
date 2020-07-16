@@ -21,14 +21,14 @@
 
 - Moderation
 
-  - Ban
-  - Kick
+  - [Ban](ban.md)
+  - [Kick](kick.md)
   - Mute
   - [Purge](purge.md)
   - Reason
   - ResetWarnings
   - UnMute
-  - Warn
+  - [Warn](warn.md)
 
 - Visual Novels
 
