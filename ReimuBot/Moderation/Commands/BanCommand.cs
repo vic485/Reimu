@@ -41,10 +41,23 @@ namespace Reimu.Moderation.Commands
             await ReplyAsync($"{user.Nickname ?? user.Username} was banned.");
         }
 
-        // TODO: We may also want to ban users not in our server by id
         [Command("ban"), RequireBotPermission(GuildPermission.BanMembers),
          RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanUserAsync(ulong id, [Remainder] string reason = null)
-            => await BanUserAsync(await ModerationHelper.ResolveUser(Context.Guild, id), reason);
+        {
+            var user = await ModerationHelper.ResolveUser(Context.Guild, id);
+
+            if (user != null)
+            {
+                await BanUserAsync(await ModerationHelper.ResolveUser(Context.Guild, id), reason);
+                return;
+            }
+            
+            var banReason = reason?.Length > 512 ? reason.Substring(0, 512) : reason;
+            await Context.Guild.AddBanAsync(id, 1, banReason);
+            // TODO: We should still log this to the mod channel (and cases?)
+            await ReplyAsync(
+                $"The user with id: {id} was not found on the server, but I have added a ban anyways. This is currently not logged by me.");
+        }
     }
 }
