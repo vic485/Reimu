@@ -4,4 +4,10 @@
         <TargetFramework>netcoreapp5.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Content Update="Pages\RedirectToLogin.razor">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
+    </ItemGroup>
+
 </Project>

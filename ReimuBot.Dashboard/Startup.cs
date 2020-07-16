@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.OAuth2;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +30,22 @@ namespace ReimuBot.Dashboard
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            //services.AddSingleton<UserService>();
+            services.AddAuthentication(opt =>
+                {
+                    opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    opt.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    opt.DefaultChallengeScheme = DiscordDefaults.AuthenticationScheme;
+                })
+                .AddCookie()
+                .AddDiscord(x =>
+                {
+                    x.AppId = Configuration["Discord:AppId"];
+                    x.AppSecret = Configuration["Discord:AppSecret"];
+                    x.Scope.Add("guilds");
+
+                    x.SaveTokens = true;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,10 +66,12 @@ namespace ReimuBot.Dashboard
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapDefaultControllerRoute();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

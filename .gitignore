@@ -2,3 +2,6 @@ bin/
 obj/
 .idea/
 *.user
+
+# Protect Discord client data in configuration
+ReimuBot.Dashboard/appsettings.json
