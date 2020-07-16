@@ -1,4 +1,4 @@
-﻿namespace Reimu.Database.Models
+﻿namespace Reimu.Common.Data
 {
     /// <summary>
     /// Base parts for information stored in the database

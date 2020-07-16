@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Reimu.Core;
-using Reimu.Database.Models.Parts;
+using Reimu.Common.Data.Parts;
 
 namespace Reimu.Moderation
 {

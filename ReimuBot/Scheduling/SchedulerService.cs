@@ -5,7 +5,7 @@ using System.Threading;
 using Discord.WebSocket;
 using Reimu.Common.Logging;
 using Reimu.Database;
-using Reimu.Database.Models;
+using Reimu.Common.Data;
 
 namespace Reimu.Scheduling
 {

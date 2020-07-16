@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Reimu.Database.Models
+namespace Reimu.Common.Data
 {
     /// <summary>
     /// Globally accessed user information
