@@ -117,7 +117,7 @@ namespace Reimu.Core
                 $"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
 
             var status = _database.Get<BotStatus>("Status");
-            status.ShardStatus[client.ShardId] = "Active";
+            status.ShardStatus[client.ShardId] = "Connecting";
             _database.Save(status);
         }
 
