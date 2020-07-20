@@ -11,7 +11,7 @@ namespace Reimu.Moderation.Commands
     [Name("Moderation"), RequireUserPermission(GuildPermission.KickMembers), RequireBotPermission(GuildPermission.BanMembers)]
     public class SoftBanCommand : ReimuBase
     {
-        [Command("softban")]
+        [Command("softban"), Alias("hardkick")]
         public async Task SoftBanAsync(SocketGuildUser user, [Remainder] string reason)
         {
             if (user.Id == Context.Client.CurrentUser.Id)
@@ -37,7 +37,7 @@ namespace Reimu.Moderation.Commands
                 $"**[Banned from {Context.Guild.Name}]**\n" +
                 $"Reason: {reason ?? "No reason provided."}");
             await user.BanAsync(1, banReason);
-            await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
+            await ModerationHelper.LogAsync(Context, user, CaseType.SoftBan, reason);
             await ReplyAsync($"{user.Nickname ?? user.Username} was soft-banned.");
             await Context.Guild.RemoveBanAsync(user);
         }

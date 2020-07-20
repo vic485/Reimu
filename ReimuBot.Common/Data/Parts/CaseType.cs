@@ -6,6 +6,7 @@
         Ban,
         Kick,
         Mute,
+        SoftBan,
         UnBan,
         UnMute,
         Warning

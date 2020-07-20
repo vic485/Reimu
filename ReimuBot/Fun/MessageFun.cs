@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Reimu.Core;
 
@@ -10,6 +11,12 @@ namespace Reimu.Fun
     {
         public static async Task Process(BotContext context)
         {
+            if (context.Message.MentionedUsers.Any(x => x.Id == context.Client.CurrentUser.Id))
+            {
+                await context.Message.AddReactionAsync(Emote.Parse("<:ReimuWantToDie:501411246906671135>"));
+                return;
+            }
+
             if (!PercentChance(context.GuildConfig.FunnyBusiness))
                 return;
 
@@ -19,7 +26,7 @@ namespace Reimu.Fun
             await RepeatText(context);
         }
 
-        private static async Task<bool> Replies(BotContext context)
+        private static async Task<bool> Replies(SocketCommandContext context)
         {
             var message = context.Message.Content.ToLower();
             switch (message)
@@ -31,8 +38,8 @@ namespace Reimu.Fun
                     return false;
             }
         }
-        
-        private static async Task<bool> RepeatText(BotContext context)
+
+        private static async Task<bool> RepeatText(SocketCommandContext context)
         {
             if (!PercentChance(20))
                 return false;

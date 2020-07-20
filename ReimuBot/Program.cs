@@ -18,13 +18,19 @@ namespace Reimu
 {
     internal static class Program
     {
-        public const string Version = "0.2.0";
+        /* When to update version numbers
+         * MAJOR - Structural changes
+         * MINOR - Add/remove command
+         * BUILD - Alias changes, command output changes, small feature additions, larger bug fixes
+         * REVISION - Minor adjustments/bug fixes
+         */
+        public static readonly Version Version = new Version(0, 2, 1, 0);
         private static LocalSettings _settings;
 
         private static async Task Main(string[] args)
         {
             _settings = SettingsLoader.Load();
-            Logger.Initialize(_settings.LogLevel, Path.Combine(Directory.GetCurrentDirectory(), "log.txt"), Version);
+            Logger.Initialize(_settings.LogLevel, Path.Combine(Directory.GetCurrentDirectory(), "log.txt"), Version.ToString());
 
             await using var services = SetupServices();
             services.GetRequiredService<DatabaseHandler>().Initialize();
