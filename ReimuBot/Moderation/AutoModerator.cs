@@ -66,8 +66,14 @@ namespace Reimu.Moderation
                 await user.KickAsync("Too many mentions in message.");
                 // TODO: Log system needs another method or adjustments to work with automoderator
                 //await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
-                await context.Channel.SendMessageAsync(
-                    $"{user.Nickname ?? user.Username} maxed out warnings and was kicked.");
+                var name = user.Nickname ?? user.Username;
+
+                // Do it silent if their name tries to ping things, since we can't guarantee they don't play with markdown
+                if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                {
+                    await context.Channel.SendMessageAsync(
+                        $"`{name}` maxed out warnings and was kicked.");
+                }
             }
             else
             {

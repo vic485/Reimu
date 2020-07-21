@@ -24,7 +24,7 @@ namespace Reimu
          * BUILD - Alias changes, command output changes, small feature additions, larger bug fixes
          * REVISION - Minor adjustments/bug fixes
          */
-        public static readonly Version Version = new Version(0, 2, 1, 0);
+        public static readonly Version Version = new Version(0, 2, 2, 0);
         private static LocalSettings _settings;
 
         private static async Task Main(string[] args)

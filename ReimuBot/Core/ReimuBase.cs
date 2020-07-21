@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -13,6 +14,9 @@ namespace Reimu.Core
         public async Task<IUserMessage> ReplyAsync(string message, Embed embed = null, bool updateConfig = false,
             bool updateGuild = false)
         {
+            if (DiscordHandler.BlockedContent.Any(message.Contains))
+                return null;
+
             await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
             _ = Task.Run(() => SaveDocuments(updateConfig, updateGuild));
             return await base.ReplyAsync(message, false, embed, null);

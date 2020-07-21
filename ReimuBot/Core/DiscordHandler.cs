@@ -20,7 +20,7 @@ namespace Reimu.Core
         private readonly CommandService _commandService;
         private readonly DatabaseHandler _database;
 
-        private readonly string[] _blockedContent = {"@everyone", "@here"};
+        public static readonly string[] BlockedContent = {"@everyone", "@here"};
 
         private IServiceProvider _serviceProvider;
 
@@ -263,7 +263,7 @@ namespace Reimu.Core
             // Do this after automod actually
             // I can't think of a reason we would want to do anything with a message mentioning here or everyone,
             // so we will toss those out to be safe from the bot accidentally mentioning these
-            if (_blockedContent.Any(socketMessage.Content.Contains))
+            if (BlockedContent.Any(socketMessage.Content.Contains))
                 return;
 
             await MessageFun.Process(context);
