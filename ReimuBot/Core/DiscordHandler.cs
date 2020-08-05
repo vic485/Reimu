@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -297,37 +298,41 @@ namespace Reimu.Core
                   userMessage.HasStringPrefix(context.GuildConfig.Prefix, ref argPos)))
                 return;
 
-            var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider, MultiMatchHandling.Best);
-            if (result.Error == null)
+            new Thread(async () =>
             {
-                RecordCommand(context, argPos);
-                return;
-            }
-
-            switch (result.Error.Value)
-            {
-                case CommandError.UnknownCommand:
-                    break;
-                case CommandError.ParseFailed:
-                    break;
-                case CommandError.BadArgCount:
-                    break;
-                case CommandError.ObjectNotFound:
-                    break;
-                case CommandError.MultipleMatches:
-                    break;
-                case CommandError.UnmetPrecondition:
-                    // TODO: DM error if we can't send messages?
-                    if (!result.ErrorReason.Contains("SendMessages"))
-                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                var result =
+                    await _commandService.ExecuteAsync(context, argPos, _serviceProvider, MultiMatchHandling.Best);
+                if (result.Error == null)
+                {
+                    RecordCommand(context, argPos);
                     return;
-                case CommandError.Exception:
-                    break;
-                case CommandError.Unsuccessful:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                }
+
+                switch (result.Error.Value)
+                {
+                    case CommandError.UnknownCommand:
+                        break;
+                    case CommandError.ParseFailed:
+                        break;
+                    case CommandError.BadArgCount:
+                        break;
+                    case CommandError.ObjectNotFound:
+                        break;
+                    case CommandError.MultipleMatches:
+                        break;
+                    case CommandError.UnmetPrecondition:
+                        // TODO: DM error if we can't send messages?
+                        if (!result.ErrorReason.Contains("SendMessages"))
+                            await context.Channel.SendMessageAsync(result.ErrorReason);
+                        return;
+                    case CommandError.Exception:
+                        break;
+                    case CommandError.Unsuccessful:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }).Start();
         }
 
         /// <summary>
