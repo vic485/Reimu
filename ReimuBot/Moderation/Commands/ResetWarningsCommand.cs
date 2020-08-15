@@ -16,7 +16,8 @@ namespace Reimu.Moderation.Commands
                 return ReplyAsync($"{user.Nickname ?? user.Username} has no warnings.");
 
             Context.GuildConfig.UserProfiles[user.Id].Warnings = 0;
-            return ReplyAsync($"Reset warnings for {user.Nickname ?? user.Username}.", updateGuild: true);
+            var name = user.Username ?? user.Nickname;
+            return ReplyAsync($"Reset warnings for {name}.", updateGuild: true);
         }
     }
 }

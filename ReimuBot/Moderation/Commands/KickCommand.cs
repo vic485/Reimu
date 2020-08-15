@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -37,7 +38,9 @@ namespace Reimu.Moderation.Commands
                 $"Reason: {reason ?? "No reason provided."}");
             await user.KickAsync(/*reason*/);
             await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
-            await ReplyAsync($"{user.Nickname ?? user.Username} was kicked.");
+            var name = user.Nickname ?? user.Username;
+            if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                await ReplyAsync($"{name} was kicked.");
         }
 
         [Command("kick"), RequireBotPermission(GuildPermission.KickMembers),

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -8,7 +9,8 @@ using Reimu.Core;
 namespace Reimu.Moderation.Commands
 {
     // This is technically an advanced kick, as we only use the ban to remove the user's messages, and unban immediately following
-    [Name("Moderation"), RequireUserPermission(GuildPermission.KickMembers), RequireBotPermission(GuildPermission.BanMembers)]
+    [Name("Moderation"), RequireUserPermission(GuildPermission.KickMembers),
+     RequireBotPermission(GuildPermission.BanMembers)]
     public class SoftBanCommand : ReimuBase
     {
         [Command("softban"), Alias("hardkick")]
@@ -38,10 +40,12 @@ namespace Reimu.Moderation.Commands
                 $"Reason: {reason ?? "No reason provided."}");
             await user.BanAsync(1, banReason);
             await ModerationHelper.LogAsync(Context, user, CaseType.SoftBan, reason);
-            await ReplyAsync($"{user.Nickname ?? user.Username} was soft-banned.");
+            var name = user.Nickname ?? user.Username;
+            if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                await ReplyAsync($"{user.Nickname ?? user.Username} was soft-banned.");
             await Context.Guild.RemoveBanAsync(user);
         }
-        
+
         // TODO: This is most likely only going to be run on an active user, meaning Reimu should always be able to
         // resolve them. On the off chance that this is not the case, we would need id soft banning here as well.
     }

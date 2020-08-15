@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -23,6 +24,8 @@ namespace Reimu.Moderation.Commands
             profile.Warnings++;
             Context.GuildConfig.UserProfiles[user.Id] = profile;
 
+            var name = user.Nickname ?? user.Username;
+
             if (Context.GuildConfig.Moderation.MaxWarnings > 0 &&
                 profile.Warnings >= Context.GuildConfig.Moderation.MaxWarnings)
             {
@@ -31,7 +34,8 @@ namespace Reimu.Moderation.Commands
                     $"Reason: {reason ?? "No reason provided. -- Maxed out warnings."}");
                 await user.KickAsync(reason);
                 await ModerationHelper.LogAsync(Context, user, CaseType.Kick, reason);
-                await ReplyAsync($"{user.Nickname ?? user.Username} maxed out warnings and was kicked.");
+                if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                    await ReplyAsync($"{name} maxed out warnings and was kicked.");
             }
             else
             {
@@ -39,7 +43,9 @@ namespace Reimu.Moderation.Commands
                     $"**[Warned in {Context.Guild.Name}]**\n" +
                     $"Reason: {reason ?? "No reason provided."}");
                 await ModerationHelper.LogAsync(Context, user, CaseType.Warning, reason);
-                await ReplyAsync($"{user.Nickname ?? user.Username} was warned.");
+
+                if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                    await ReplyAsync($"{name} was warned.");
             }
         }
 

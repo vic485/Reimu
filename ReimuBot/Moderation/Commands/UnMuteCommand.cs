@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -24,7 +25,9 @@ namespace Reimu.Moderation.Commands
             await user.RemoveRoleAsync(role);
             Context.GuildConfig.Moderation.MutedUsers.Remove(user.Id);
             await ModerationHelper.LogAsync(Context, user, CaseType.UnMute, reason);
-            await ReplyAsync($"{user.Mention} was unmuted.", updateGuild: true);
+            var name = user.Nickname ?? user.Username;
+            if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                await ReplyAsync($"{name} was unmuted.", updateGuild: true);
         }
     }
 }

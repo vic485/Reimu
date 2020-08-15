@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -38,7 +39,9 @@ namespace Reimu.Moderation.Commands
                 $"Reason: {reason ?? "No reason provided."}");
             await user.BanAsync(1, banReason);
             await ModerationHelper.LogAsync(Context, user, CaseType.Ban, reason);
-            await ReplyAsync($"{user.Nickname ?? user.Username} was banned.");
+            var name = user.Nickname ?? user.Username;
+            if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                await ReplyAsync($"{name} was banned.");
         }
 
         [Command("ban"), RequireBotPermission(GuildPermission.BanMembers),

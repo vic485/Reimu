@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -30,7 +31,9 @@ namespace Reimu.Moderation.Commands
             await user.AddRoleAsync(role);
             Context.GuildConfig.Moderation.MutedUsers.Add(user.Id);
             await ModerationHelper.LogAsync(Context, user, CaseType.Mute, reason);
-            await ReplyAsync($"{user.Mention} was muted.", updateGuild: true);
+            var name = user.Nickname ?? user.Username;
+            if (!DiscordHandler.BlockedContent.Any(name.Contains))
+                await ReplyAsync($"{name} was muted.", updateGuild: true);
         }
     }
 }
