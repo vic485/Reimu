@@ -85,6 +85,10 @@ namespace Reimu.Core
             _serviceProvider = provider;
             await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
             Logger.LogVerbose($"Total commands registered: {_commandService.Commands.Count()}");
+
+            foreach (var client in _client.Shards)
+                await client.SetGameAsync(
+                    $"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
         }
 
         #region Connections
@@ -111,15 +115,16 @@ namespace Reimu.Core
         }
 
         // Called after connected to discord, and user data downloaded
-        private async Task ReadyAsync(DiscordSocketClient client)
+        private Task ReadyAsync(DiscordSocketClient client)
         {
             Logger.LogInfo($"Shard {client.ShardId + 1} is ready.");
-            await client.SetGameAsync(
-                $"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
+            //await client.SetGameAsync(
+                //$"{_database.Get<BotConfig>("Config").Prefix}help | Shard [{client.ShardId + 1}]");
 
             var status = _database.Get<BotStatus>("Status");
             status.ShardStatus[client.ShardId] = "Connecting";
             _database.Save(status);
+            return Task.CompletedTask;
         }
 
         // TODO: Instead of latency use this for statuses/errors?
@@ -179,7 +184,7 @@ namespace Reimu.Core
             return Task.CompletedTask;
         }
 
-        private Task GuildUnavailable(SocketGuild guild)
+        private static Task GuildUnavailable(SocketGuild guild)
         {
             Logger.LogInfo($"Guild {guild.Name} has become unavailable.");
             return Task.CompletedTask;
